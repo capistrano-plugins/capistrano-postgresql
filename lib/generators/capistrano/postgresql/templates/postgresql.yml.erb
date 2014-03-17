@@ -1,0 +1,8 @@
+<%= fetch :stage %>:
+  adapter: postgresql
+  encoding: <%= fetch :postgresql_encoding %>
+  database: <%= fetch :postgresql_database %>
+  pool: <%= fetch :postgresql_pool %>
+  username: <%= fetch :postgresql_user %>
+  password: '<%= fetch :postgresql_password %>'
+  host: <%= fetch :postgresql_host %>
