@@ -1,4 +1,4 @@
-capistrano2-postgresql is MIT licensed.
+capistrano-postgresql is MIT licensed.
 
 Copyright (C) 2014 Bruno Sutic
 
