@@ -79,9 +79,9 @@ namespace :load do
     set :postgresql_password,   -> { ask_for_or_generate_password }
     set :postgresql_ask_for_password, false
     set :postgresql_default_tasks,    true
-    set :postgresql_templates_path,   "config/deploy/templates"
 
     # template only settings (used in postgresql.yml.erb)
+    set :postgresql_templates_path,   "config/deploy/templates"
     set :postgresql_pool,     5
     set :postgresql_encoding, "unicode"
     set :postgresql_host,     "localhost"
