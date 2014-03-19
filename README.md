@@ -112,7 +112,7 @@ yet another fricking password.<br/>
 * `set :postgresql_default_tasks`<br/>
 This task determines whether capistrano tasks from this plugin are executed
 automatically during capistrano deploy process. Defaults to `true`. Tasks that
-are run automatically are: `postgresql:create_database`,
+run automatically are: `postgresql:create_database`,
 `postgresql:generate_database_yml` and `postgresql:ensure_database_yml_symlink`.
 
 `database.yml` template-only settings:
