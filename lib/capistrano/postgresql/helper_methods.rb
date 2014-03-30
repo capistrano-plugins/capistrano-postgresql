@@ -14,6 +14,10 @@ module Capistrano
         StringIO.new ERB.new(File.read(config_file)).result(binding)
       end
 
+      def database_yml_file
+        shared_path.join('config/database.yml')
+      end
+
     end
   end
 end

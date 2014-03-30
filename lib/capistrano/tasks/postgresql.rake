@@ -49,7 +49,6 @@ namespace :postgresql do
   desc 'Generate database.yml'
   task :generate_database_yml do
     on roles :app do
-      database_yml_file = shared_path.join('config/database.yml')
       next if test "[ -e #{database_yml_file} ]"
       upload! template('postgresql.yml.erb'), database_yml_file
     end
