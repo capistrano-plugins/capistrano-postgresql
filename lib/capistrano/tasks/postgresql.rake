@@ -20,7 +20,7 @@ namespace :postgresql do
 
   desc 'Create a database for this application'
   task :create_database do
-    on roles(:db) do
+    on roles :db do
       ensure_db_user_created fetch(:postgresql_user), fetch(:postgresql_password)
       ensure_database_created fetch(:postgresql_database), fetch(:postgresql_user)
     end
@@ -28,7 +28,7 @@ namespace :postgresql do
 
   desc 'Generate the database.yml configuration file'
   task :generate_database_yml do
-    on roles(:app) do
+    on roles :app do
       database_yml_path = shared_path.join('config/database.yml')
       next if remote_file_exists?(database_yml_path)
       execute :mkdir, '-p', shared_path.join('config')
@@ -38,7 +38,7 @@ namespace :postgresql do
 
   desc 'Adds `config/database.yml` to the linked_files array'
   task :ensure_database_yml_symlink do
-    on roles(:app) do
+    on roles :app do
       if fetch(:linked_files).nil?
         set :linked_files, ['config/database.yml']
       elsif !fetch(:linked_files).include? 'config/database.yml'
