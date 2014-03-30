@@ -56,10 +56,8 @@ automatically generated and used in the next step.
 * `postgresql:generate_database_yml`<br/>
 creates a `database.yml` file and copies it to
 `#{shared_path}/config/database.yml` on the server.
-* `postgresql:ensure_database_yml_symlink`<br/>
-adds `config/database.yml` to the `linked_files` array. Capistrano handles
-symlinking `database.yml` to the application release path.
 
+Also, the plugin ensures `config/database.yml` is symlinked from `shared_path`.
 The above tasks are all you need for getting rails app to work with PostgreSQL.
 
 ### Gotchas
@@ -99,12 +97,6 @@ via `postgresql_password`. The downside is you have to choose and remember
 yet another fricking password.<br/>
 `postgresql_password` option has precedence. If it is set,
 `postgresql_ask_for_password` is ignored.
-
-* `set :postgresql_default_tasks`<br/>
-This task determines whether capistrano tasks from this plugin are executed
-automatically during capistrano deploy process. Defaults to `true`. Tasks that
-run automatically are: `postgresql:create_database`,
-`postgresql:generate_database_yml` and `postgresql:ensure_database_yml_symlink`.
 
 `database.yml` template-only settings:
 

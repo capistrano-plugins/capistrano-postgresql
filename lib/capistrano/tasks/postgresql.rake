@@ -13,6 +13,8 @@ namespace :load do
     set :postgresql_pool,     5
     set :postgresql_encoding, 'unicode'
     set :postgresql_host,     'localhost'
+
+    set :linked_files, fetch(:linked_files, []).push('config/database.yml')
   end
 end
 
@@ -36,19 +38,7 @@ namespace :postgresql do
     end
   end
 
-  desc 'Adds `config/database.yml` to the linked_files array'
-  task :ensure_database_yml_symlink do
-    on roles :app do
-      if fetch(:linked_files).nil?
-        set :linked_files, ['config/database.yml']
-      elsif !fetch(:linked_files).include? 'config/database.yml'
-        fetch(:linked_files) << 'config/database.yml'
-      end
-    end
-  end
-
   after 'deploy:started', 'postgresql:create_database'
   after 'deploy:started', 'postgresql:generate_database_yml'
-  after 'deploy:started', 'postgresql:ensure_database_yml_symlink'
 
 end
