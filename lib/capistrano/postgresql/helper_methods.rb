@@ -43,10 +43,6 @@ module Capistrano
         test :sudo, '-u postgres psql', *args
       end
 
-      def database_yml_file
-        shared_path.join('config/database.yml')
-      end
-
     end
   end
 end
