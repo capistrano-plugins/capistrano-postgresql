@@ -34,34 +34,8 @@ module Capistrano
         psql "-tAc", %Q{"SELECT 1 FROM pg_roles WHERE rolname='#{name}';" | grep -q 1}
       end
 
-      def create_db_user(name, password)
-        unless psql "-c", %Q{"CREATE user #{name} WITH password '#{password}';"}
-          error "postgresql: creating database user failed!"
-          exit 1
-        end
-      end
-
-      def ensure_db_user_created(name, password)
-        unless db_user_exists?(name)
-          create_db_user(name, password)
-        end
-      end
-
       def database_exists?(db_name)
         psql "-tAc", %Q{"SELECT 1 FROM pg_database WHERE datname='#{db_name}';" | grep -q 1}
-      end
-
-      def create_database(db_name, user_name)
-        unless psql "-c", %Q{"CREATE database #{db_name} owner #{user_name};"}
-          error "postgresql: creating database '#{db_name}' failed!"
-          exit 1
-        end
-      end
-
-      def ensure_database_created(db_name, user_name)
-        unless database_exists?(db_name)
-          create_database(db_name, user_name)
-        end
       end
 
       # returns true or false depending on the remote command exit status

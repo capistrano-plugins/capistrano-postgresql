@@ -23,14 +23,22 @@ namespace :postgresql do
   desc 'Create DB user'
   task :create_db_user do
     on roles :db do
-      ensure_db_user_created fetch(:postgresql_user), fetch(:postgresql_password)
+      next if db_user_exists? fetch(:postgresql_user)
+      unless psql "-c", %Q{"CREATE user #{fetch(:postgresql_user)} WITH password '#{fetch(:postgresql_password)}';"}
+        error "postgresql: creating database user failed!"
+        exit 1
+      end
     end
   end
 
   desc 'Create database'
   task :create_database do
     on roles :db do
-      ensure_database_created fetch(:postgresql_database), fetch(:postgresql_user)
+      next if database_exists? fetch(:postgresql_database)
+      unless psql "-c", %Q{"CREATE database #{fetch(:postgresql_database)} owner #{fetch(:postgresql_user)};"}
+        error "postgresql: creating database failed!"
+        exit 1
+      end
     end
   end
 
