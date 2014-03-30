@@ -22,6 +22,19 @@ end
 
 namespace :postgresql do
 
+  # undocumented, for a reason: drops database. Use with care!
+  task :remove_all do
+    on roles :app do
+      if test "[ -e #{database_yml_file} ]"
+        execute :rm, database_yml_file
+      end
+    end
+    on roles :db do
+      psql '-c', %Q{"DROP database #{fetch(:pg_database)};"}
+      psql '-c', %Q{"DROP user #{fetch(:pg_user)};"}
+    end
+  end
+
   desc 'Create DB user'
   task :create_db_user do
     on roles :db do
