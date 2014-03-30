@@ -4,7 +4,7 @@ module Capistrano
   module Postgresql
     module HelperMethods
 
-      def template(template_name)
+      def pg_template(template_name)
         config_file = "#{fetch(:pg_templates_path)}/#{template_name}"
         # If there's no customized file in your rails app template directory,
         # proceed with the default.

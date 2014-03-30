@@ -17,8 +17,6 @@ namespace :load do
     set :pg_pool, 5
     set :pg_encoding, 'unicode'
     set :pg_host, 'localhost'
-
-    set :linked_files, fetch(:linked_files, []).push('config/database.yml')
   end
 end
 
@@ -50,12 +48,17 @@ namespace :postgresql do
   task :generate_database_yml do
     on roles :app do
       next if test "[ -e #{database_yml_file} ]"
-      upload! template('postgresql.yml.erb'), database_yml_file
+      upload! pg_template('postgresql.yml.erb'), database_yml_file
     end
+  end
+
+  task :database_yml_symlink do
+    set :linked_files, fetch(:linked_files, []).push('config/database.yml')
   end
 
   after 'deploy:started', 'postgresql:create_db_user'
   after 'deploy:started', 'postgresql:create_database'
   after 'deploy:started', 'postgresql:generate_database_yml'
+  after 'deploy:started', 'postgresql:database_yml_symlink'
 
 end
