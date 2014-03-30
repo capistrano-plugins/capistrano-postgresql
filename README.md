@@ -154,6 +154,19 @@ You can configure the template location. For example:
 `set :postgresql_templates_path, "config"` and the template will be copied to
 `config/postgresql.yml.erb`.
 
+### More Capistrano automation?
+
+If you'd like to streamline your Capistrano deploys, you might want to check
+these zero-configuration, plug-n-play plugins:
+
+- [capistrano-unicorn-nginx](https://github.com/bruno-/capistrano-unicorn-nginx)<br/>
+no-configuration unicorn and nginx setup with sensible defaults
+- [capistrano-rbenv-install](https://github.com/bruno-/capistrano-rbenv-install)<br/>
+would you like Capistrano to install rubies for you?
+- [capistrano-safe-deploy-to](https://github.com/bruno-/capistrano-safe-deploy-to)<br/>
+if you're annoyed that Capistrano does **not** create a deployment path for the
+app on the server (default `/var/www/myapp`), this is what you need!
+
 ### Contributing and bug reports
 
 Contributions and improvements are very welcome. Just open a pull request and
