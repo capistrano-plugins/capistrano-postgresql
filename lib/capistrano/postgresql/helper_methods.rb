@@ -1,4 +1,3 @@
-require 'securerandom'
 require 'erb'
 
 module Capistrano
@@ -13,21 +12,6 @@ module Capistrano
           config_file = File.join(File.dirname(__FILE__), "../../generators/capistrano/postgresql/templates/#{template_name}")
         end
         StringIO.new ERB.new(File.read(config_file)).result(binding)
-      end
-
-      # This method is invoked only if `:pg_password` is not already
-      # set in `config/#{:stage}/deploy.rb`. Directly setting
-      # `:pg_password` has precedence.
-      def ask_for_or_generate_password
-        if fetch(:pg_ask_for_password)
-          ask :pg_password, "Postgresql database password for the app: "
-        else
-          set :pg_password, generate_random_password
-        end
-      end
-
-      def generate_random_password
-        SecureRandom.hex(10)
       end
 
       def db_user_exists?(name)
