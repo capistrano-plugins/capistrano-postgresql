@@ -15,9 +15,9 @@ Here are the specific things this plugin does for your capistrano deployment
 process:
 
 * creates a new PostgreSQL database and database user on the server
-* generates and populates `database.yml` file with the right data on the server
+* generates and populates `database.yml` file
   (no need to ssh to the server and do this manually!)
-* no config necessary (or it's kept to a minimum)
+* zero-config
 
 ### Installation
 
@@ -28,16 +28,20 @@ Put the following in your application's `Gemfile`:
       gem 'capistrano-postgresql'
     end
 
-Install the gem with:
+Then:
 
     $ bundle install
 
-### Standard usage
+### Usage
 
 If you're deploying a standard rails app, all you need to do is put
 the following in `Capfile` file:
 
     require 'capistrano/postgresql'
+
+And deploy:
+
+    $ bundle exec cap production deploy
 
 Easy, right?
 
@@ -50,15 +54,17 @@ Check here for the full capistrano deployment flow
 
 The following tasks run automatically after `deploy:started` task:
 
+* `postgresql:create_db_user`<br/>
+creates a postgresql user. Password for the user is automatically generated and
+used in the next steps.
 * `postgresql:create_database`<br/>
-creates a postgresql user and a database for your app. Password for the user is
-automatically generated and used in the next step.
+creates database for your app.
 * `postgresql:generate_database_yml`<br/>
 creates a `database.yml` file and copies it to
 `#{shared_path}/config/database.yml` on the server.
 
 Also, the plugin ensures `config/database.yml` is symlinked from `shared_path`.
-The above tasks are all you need for getting rails app to work with PostgreSQL.
+The above tasks are all you need for getting a Rails app to work with PostgreSQL.
 
 ### Gotchas
 
@@ -68,7 +74,7 @@ Be sure to remove `config/database.yml` from your application's version control.
 
 This plugin should just work with no configuration whatsoever. However,
 configuration is possible. Put all your configs in capistrano stage files i.e.
-`config/deploy/production.rb`, `config/deploy/staging.rb`.
+`config/deploy/production.rb`.
 
 Here's the list of options and the defaults for each option:
 
@@ -81,7 +87,7 @@ Name of the database user. Defaults to whatever is set for `pg_database`
 option.
 
 * `set :pg_password`<br/>
-Password for the database user. By default this option is not set and
+Password for the database user. By default this option is not set and a
 **new random password** is generated each time you create a new database.<br/>
 If you set this option to `"some_secure_password"` - that will be the db user's
 password. Keep in mind that having a hardcoded password in `deploy.rb` (or
@@ -128,7 +134,7 @@ shared directory on the server:
 If for any reason you want to edit or tweak this template, you can copy it to
 `config/deploy/templates/postgresql.yml.erb` with this command:
 
-    bundle exec rails g capistrano:postgresql:template
+    $ bundle exec rails g capistrano:postgresql:template
 
 After you edit this newly created file in your repo, it will be used as a
 template for `database.yml` on the server.
@@ -164,11 +170,6 @@ Here are other plugins and people this project was based upon:
 * [Matt Bridges](https://github.com/mattdbridges) - capistrano postgresql tasks
 from this plugin are heavily based on his
 [capistrano-recipes repo](https://github.com/mattdbridges/capistrano-recipes).
-
-* [Kalys Osmonom](https://github.com/kalys) - his
-[capistrano-nginx-unicorn](https://github.com/kalys/capistrano-nginx-unicorn)
-gem structure was an inspiration for this plugin. A lot of the features were
-directly copied from his project (example: `database.yml` template generator).
 
 ### License
 
