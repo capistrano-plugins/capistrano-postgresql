@@ -6,7 +6,7 @@ module Capistrano
     module HelperMethods
 
       def database_yml_template(template_name, target)
-        config_file = "#{fetch(:postgresql_templates_path)}/#{template_name}"
+        config_file = "#{fetch(:pg_templates_path)}/#{template_name}"
         # If there's no customized file in your rails app template directory,
         # proceed with the default.
         unless File.exists?(config_file)
@@ -15,14 +15,14 @@ module Capistrano
         upload! StringIO.new(ERB.new(File.read(config_file)).result(binding)), target
       end
 
-      # This method is invoked only if `:postgresql_password` is not already
+      # This method is invoked only if `:pg_password` is not already
       # set in `config/#{:stage}/deploy.rb`. Directly setting
-      # `:postgresql_password` has precedence.
+      # `:pg_password` has precedence.
       def ask_for_or_generate_password
-        if fetch(:postgresql_ask_for_password)
-          ask :postgresql_password, "Postgresql database password for the app: "
+        if fetch(:pg_ask_for_password)
+          ask :pg_password, "Postgresql database password for the app: "
         else
-          set :postgresql_password, generate_random_password
+          set :pg_password, generate_random_password
         end
       end
 

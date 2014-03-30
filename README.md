@@ -72,15 +72,15 @@ configuration is possible. Put all your configs in capistrano stage files i.e.
 
 Here's the list of options and the defaults for each option:
 
-* `set :postgresql_database`<br/>
+* `set :pg_database`<br/>
 Name of the database for your app. Defaults to `#{application}_#{stage}`,
 example: `myface_production`.
 
-* `set :postgresql_user`<br/>
-Name of the database user. Defaults to whatever is set for `postgresql_database`
+* `set :pg_user`<br/>
+Name of the database user. Defaults to whatever is set for `pg_database`
 option.
 
-* `set :postgresql_password`<br/>
+* `set :pg_password`<br/>
 Password for the database user. By default this option is not set and
 **new random password** is generated each time you create a new database.<br/>
 If you set this option to `"some_secure_password"` - that will be the db user's
@@ -90,23 +90,23 @@ I recommend sticking to the default and generating a new secure and random
 password each time a db user is generated. That way you don't have to worry
 about it or try to remember it.
 
-* `set :postgresql_ask_for_password`<br/>
+* `set :pg_ask_for_password`<br/>
 Default `false`. Set this option to `true` if you want to be prompted for the
 password when database user is created. This is safer than setting the password
-via `postgresql_password`. The downside is you have to choose and remember
+via `pg_password`. The downside is you have to choose and remember
 yet another fricking password.<br/>
-`postgresql_password` option has precedence. If it is set,
-`postgresql_ask_for_password` is ignored.
+`pg_password` option has precedence. If it is set,
+`pg_ask_for_password` is ignored.
 
 `database.yml` template-only settings:
 
-* `set :postgresql_pool`<br/>
+* `set :pg_pool`<br/>
 Pool config in `database.yml` template. Defaults to `5`.
 
-* `set :postgresql_host`<br/>
+* `set :pg_host`<br/>
 `hostname` config in `database.yml` template. Defaults to `localhost`.
 
-* `set :postgresql_encoding`<br/>
+* `set :pg_encoding`<br/>
 `encoding` config in `database.yml` template. Defaults to `unicode`.
 
 ### Customizing the `database.yml` template
@@ -117,12 +117,12 @@ shared directory on the server:
 ```yml
 <%= fetch :stage %>:
   adapter: postgresql
-  encoding: <%= postgresql_encoding %>
-  database: <%= postgresql_database %>
-  pool: <%= postgresql_pool %>
-  username: <%= postgresql_user %>
-  password: '<%= postgresql_password %>'
-  host: <%= postgresql_host %>
+  encoding: <%= pg_encoding %>
+  database: <%= pg_database %>
+  pool: <%= pg_pool %>
+  username: <%= pg_user %>
+  password: '<%= pg_password %>'
+  host: <%= pg_host %>
 ```
 
 If for any reason you want to edit or tweak this template, you can copy it to
@@ -134,7 +134,7 @@ After you edit this newly created file in your repo, it will be used as a
 template for `database.yml` on the server.
 
 You can configure the template location. For example:
-`set :postgresql_templates_path, "config"` and the template will be copied to
+`set :pg_templates_path, "config"` and the template will be copied to
 `config/postgresql.yml.erb`.
 
 ### More Capistrano automation?
