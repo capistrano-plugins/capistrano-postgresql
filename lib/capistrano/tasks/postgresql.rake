@@ -18,7 +18,7 @@ end
 
 namespace :postgresql do
 
-  desc 'Create a database for this application'
+  desc 'Create database'
   task :create_database do
     on roles :db do
       ensure_db_user_created fetch(:postgresql_user), fetch(:postgresql_password)
@@ -26,7 +26,7 @@ namespace :postgresql do
     end
   end
 
-  desc 'Generate the database.yml configuration file'
+  desc 'Generate database.yml'
   task :generate_database_yml do
     on roles :app do
       database_yml_path = shared_path.join('config/database.yml')
