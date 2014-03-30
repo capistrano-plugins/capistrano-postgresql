@@ -8,8 +8,6 @@ namespace :load do
     set :postgresql_user,       -> { fetch(:postgresql_database) }
     set :postgresql_password,   -> { ask_for_or_generate_password }
     set :postgresql_ask_for_password, false
-    set :postgresql_default_tasks,    true
-
     # template only settings (used in postgresql.yml.erb)
     set :postgresql_templates_path,   "config/deploy/templates"
     set :postgresql_pool,     5
@@ -26,7 +24,6 @@ namespace :postgresql do
     puts "postgresql_user:             #{fetch(:postgresql_user)}"
     puts "postgresql_password:         #{fetch(:postgresql_password)}"
     puts "postgresql_ask_for_password: #{fetch(:postgresql_ask_for_password)}"
-    puts "postgresql_default_tasks:    #{fetch(:postgresql_default_tasks)}"
     puts "postgresql_pool:             #{fetch(:postgresql_pool)}"
     puts "postgresql_encoding:         #{fetch(:postgresql_encoding)}"
     puts "postgresql_host              #{fetch(:postgresql_host)}"
@@ -97,14 +94,8 @@ namespace :postgresql do
     end
   end
 
-  after "deploy:started", "postgresql:started" do
-    # `postgresql_default_tasks` true by default -> capistrano-postgresql tasks
-    # run automatically on deploy
-    if fetch(:postgresql_default_tasks)
-      invoke "postgresql:create_database"
-      invoke "postgresql:generate_database_yml"
-      invoke "postgresql:ensure_database_yml_symlink"
-    end
-  end
+  after 'deploy:started', 'postgresql:create_database'
+  after 'deploy:started', 'postgresql:generate_database_yml'
+  after 'deploy:started', 'postgresql:ensure_database_yml_symlink'
 
 end
