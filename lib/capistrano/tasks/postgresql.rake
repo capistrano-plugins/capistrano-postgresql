@@ -18,17 +18,6 @@ end
 
 namespace :postgresql do
 
-  desc "Print all the variables"
-  task :debug do
-    puts "postgresql_database:         #{fetch(:postgresql_database)}"
-    puts "postgresql_user:             #{fetch(:postgresql_user)}"
-    puts "postgresql_password:         #{fetch(:postgresql_password)}"
-    puts "postgresql_ask_for_password: #{fetch(:postgresql_ask_for_password)}"
-    puts "postgresql_pool:             #{fetch(:postgresql_pool)}"
-    puts "postgresql_encoding:         #{fetch(:postgresql_encoding)}"
-    puts "postgresql_host              #{fetch(:postgresql_host)}"
-  end
-
   # This task never runs automatically
   # desc "Drop a database for this application"
   task :drop_database do

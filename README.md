@@ -66,15 +66,6 @@ The above tasks are all you need for getting rails app to work with PostgreSQL.
 
 Be sure to remove `config/database.yml` from your application's version control.
 
-### Debugging
-
-A debugging task is provided. Run `bundle exec <your_stage> cap postgres:debug`
-and you should get a list of all capistrano-postgresql settings and their
-values.
-
-I deeply hope you'll never need to use this, as this plugins strives to be
-very easy to use with minimal or no configuration.
-
 ### Configuration
 
 This plugin should just work with no configuration whatsoever. However,
