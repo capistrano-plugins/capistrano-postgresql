@@ -5,14 +5,14 @@ module Capistrano
   module Postgresql
     module HelperMethods
 
-      def database_yml_template(template_name, target)
+      def template(template_name)
         config_file = "#{fetch(:pg_templates_path)}/#{template_name}"
         # If there's no customized file in your rails app template directory,
         # proceed with the default.
         unless File.exists?(config_file)
           config_file = File.join(File.dirname(__FILE__), "../../generators/capistrano/postgresql/templates/#{template_name}")
         end
-        upload! StringIO.new(ERB.new(File.read(config_file)).result(binding)), target
+        StringIO.new ERB.new(File.read(config_file)).result(binding)
       end
 
       # This method is invoked only if `:pg_password` is not already
