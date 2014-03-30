@@ -15,8 +15,9 @@ module Capistrano
         upload! StringIO.new(ERB.new(File.read(config_file)).result(binding)), target
       end
 
-      # This method is invoked only if `:postgresql_password` is not already set in
-      # `config/deploy.rb`. Directly setting `:postgresql_password` has precedence.
+      # This method is invoked only if `:postgresql_password` is not already
+      # set in `config/#{:stage}/deploy.rb`. Directly setting
+      # `:postgresql_password` has precedence.
       def ask_for_or_generate_password
         if fetch(:postgresql_ask_for_password)
           ask :postgresql_password, "Postgresql database password for the app: "
@@ -34,9 +35,7 @@ module Capistrano
       end
 
       def create_db_user(name, password)
-        if psql "-c", %Q{"CREATE user #{name} WITH password '#{password}';"}
-          info "postgresq: database user '#{name}' created"
-        else
+        unless psql "-c", %Q{"CREATE user #{name} WITH password '#{password}';"}
           error "postgresql: creating database user failed!"
           exit 1
         end
@@ -53,9 +52,7 @@ module Capistrano
       end
 
       def create_database(db_name, user_name)
-        if psql "-c", %Q{"CREATE database #{db_name} owner #{user_name};"}
-          info "postgresql: database '#{db_name}' created"
-        else
+        unless psql "-c", %Q{"CREATE database #{db_name} owner #{user_name};"}
           error "postgresql: creating database '#{db_name}' failed!"
           exit 1
         end
@@ -69,7 +66,7 @@ module Capistrano
 
       # returns true or false depending on the remote command exit status
       def psql(*args)
-        test :sudo, "-u postgres psql", *args
+        test :sudo, '-u postgres psql', *args
       end
 
       def remote_file_exists?(path)
