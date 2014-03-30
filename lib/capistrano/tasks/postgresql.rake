@@ -45,10 +45,8 @@ namespace :postgresql do
   desc 'Generate database.yml'
   task :generate_database_yml do
     on roles :app do
-      database_yml_path = shared_path.join('config/database.yml')
-      next if remote_file_exists?(database_yml_path)
-      execute :mkdir, '-p', shared_path.join('config')
-      database_yml_template 'postgresql.yml.erb', database_yml_path
+      next if test "[ -e #{database_yml_file} ]"
+      database_yml_template 'postgresql.yml.erb', database_yml_file
     end
   end
 

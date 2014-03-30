@@ -43,8 +43,8 @@ module Capistrano
         test :sudo, '-u postgres psql', *args
       end
 
-      def remote_file_exists?(path)
-        test "[ -e #{path} ]"
+      def database_yml_file
+        shared_path.join('config/database.yml')
       end
 
     end
