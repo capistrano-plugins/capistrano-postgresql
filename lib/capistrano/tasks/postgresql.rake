@@ -18,38 +18,6 @@ end
 
 namespace :postgresql do
 
-  # This task never runs automatically
-  # desc "Drop a database for this application"
-  task :drop_database do
-    on roles(:db) do
-      psql "-c", %Q{"DROP database #{fetch(:postgresql_database)};"}
-    end
-  end
-
-  # This task never runs automatically
-  # desc "Delete database user for this application"
-  task :delete_db_user do
-    on roles(:db) do
-      psql "-c", %Q{"DROP user #{fetch(:postgresql_user)};"}
-    end
-  end
-
-  # this task never runs automatically
-  # desc "Delete `config/database.yml` from the shared path on the server"
-  task :delete_database_yml do
-    on roles(:app) do
-      database_yml_path = shared_path.join("config/database.yml")
-      if remote_file_exists? database_yml_path
-        execute :rm, database_yml_path
-      end
-    end
-  end
-
-  # this task never runs automatically. DANGEROUS! Destroys database on the server!
-  # desc "Removes application database, DB user and removes `database.yml` from the server"
-  task remove_all: [:drop_database, :delete_db_user, :delete_database_yml]
-
-
   desc "Create a database for this application"
   task :create_database do
     on roles(:db) do
