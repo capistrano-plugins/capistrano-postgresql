@@ -1,8 +1,10 @@
 require 'capistrano/postgresql/helper_methods'
 require 'capistrano/postgresql/password_helpers'
+require 'capistrano/postgresql/pslq_helpers'
 
 include Capistrano::Postgresql::HelperMethods
 include Capistrano::Postgresql::PasswordHelpers
+include Capistrano::Postgresql::PsqlHelpers
 
 namespace :load do
   task :defaults do
@@ -10,7 +12,7 @@ namespace :load do
     set :pg_user,     -> { fetch(:pg_database) }
     set :pg_ask_for_password, false
     set :pg_password, -> { ask_for_or_generate_password }
-    # template only settings (used in postgresql.yml.erb)
+    # template only settings
     set :pg_templates_path, 'config/deploy/templates'
     set :pg_pool,     5
     set :pg_encoding, 'unicode'
