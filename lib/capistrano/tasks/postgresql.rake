@@ -20,10 +20,16 @@ end
 
 namespace :postgresql do
 
+  desc 'Create DB user'
+  task :create_db_user do
+    on roles :db do
+      ensure_db_user_created fetch(:postgresql_user), fetch(:postgresql_password)
+    end
+  end
+
   desc 'Create database'
   task :create_database do
     on roles :db do
-      ensure_db_user_created fetch(:postgresql_user), fetch(:postgresql_password)
       ensure_database_created fetch(:postgresql_database), fetch(:postgresql_user)
     end
   end
@@ -38,6 +44,7 @@ namespace :postgresql do
     end
   end
 
+  after 'deploy:started', 'postgresql:create_db_user'
   after 'deploy:started', 'postgresql:create_database'
   after 'deploy:started', 'postgresql:generate_database_yml'
 
