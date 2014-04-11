@@ -39,9 +39,15 @@ the following in `Capfile` file:
 
     require 'capistrano/postgresql'
 
-And deploy:
+Make sure the `deploy_to` path exists and has the right privileges on the
+server (i.e. `/var/www/myapp`).<br/>
+Or just install
+[capistrano-safe-deploy-to](https://github.com/bruno-/capistrano-safe-deploy-to)
+plugin and don't think about it.
 
-    $ bundle exec cap production deploy
+To setup the server, run:
+
+    $ bundle exec cap production setup
 
 Easy, right?
 
@@ -52,7 +58,7 @@ Check below to see what happens in the background.
 Check here for the full capistrano deployment flow
 [http://capistranorb.com/documentation/getting-started/flow/](http://capistranorb.com/documentation/getting-started/flow/).
 
-The following tasks run automatically after `deploy:started` task:
+The following tasks run during the `setup` task:
 
 * `postgresql:create_db_user`<br/>
 creates a postgresql user. Password for the user is automatically generated and
