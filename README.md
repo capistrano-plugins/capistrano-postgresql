@@ -25,7 +25,7 @@ Put the following in your application's `Gemfile`:
 
     group :development do
       gem 'capistrano', '~> 3.1'
-      gem 'capistrano-postgresql'
+      gem 'capistrano-postgresql', '~> 3.0'
     end
 
 Then:
