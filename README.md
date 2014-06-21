@@ -110,6 +110,11 @@ yet another fricking password.<br/>
 `pg_password` option has precedence. If it is set,
 `pg_ask_for_password` is ignored.
 
+* `set :pg_system_user`<br/>
+Default `postgres`. Set this option to the user that owns the postgres process
+on your system. Normally the default is fine, but for instance on FreeBSD the
+default prostgres user is `pgsql`.
+
 `database.yml` template-only settings:
 
 * `set :pg_pool`<br/>
