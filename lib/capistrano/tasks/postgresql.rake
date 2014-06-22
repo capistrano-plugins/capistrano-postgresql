@@ -16,6 +16,7 @@ namespace :load do
     set :pg_system_db, 'postgres'
     set :pg_use_hstore, false
     set :pg_extensions, []
+    set :pg_no_sudo, false
     # template only settings
     set :pg_templates_path, 'config/deploy/templates'
     set :pg_env, -> { fetch(:rails_env) || fetch(:stage) }
