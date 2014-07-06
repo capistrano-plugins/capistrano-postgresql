@@ -4,7 +4,7 @@ module Capistrano
 
       # returns true or false depending on the remote command exit status
       def psql(*args)
-        test :sudo, "-u #{fetch(:pg_system_user)} psql", *args
+        test :sudo, "-u #{fetch(:pg_system_user)} psql -d #{fetch(:pg_system_db)}", *args
       end
 
       def db_user_exists?(name)

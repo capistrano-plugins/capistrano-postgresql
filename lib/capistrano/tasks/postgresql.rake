@@ -13,6 +13,7 @@ namespace :load do
     set :pg_ask_for_password, false
     set :pg_password, -> { ask_for_or_generate_password }
     set :pg_system_user, 'postgres'
+    set :pg_system_db, 'postgres'
     # template only settings
     set :pg_templates_path, 'config/deploy/templates'
     set :pg_pool, 5

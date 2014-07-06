@@ -115,6 +115,10 @@ Default `postgres`. Set this option to the user that owns the postgres process
 on your system. Normally the default is fine, but for instance on FreeBSD the
 default prostgres user is `pgsql`.
 
+* `set :pg_system_db`<br/>
+Default `postgres`. Set this if the system database don't have the standard name.
+Usually there should be no reason to change this from the default.
+
 `database.yml` template-only settings:
 
 * `set :pg_pool`<br/>
