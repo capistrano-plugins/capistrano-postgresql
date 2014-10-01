@@ -26,7 +26,7 @@ namespace :postgresql do
 
   # undocumented, for a reason: drops database. Use with care!
   task :remove_all do
-    on roles :app do
+    on roles [:app, fetch(:migration_role)] do
       if test "[ -e #{database_yml_file} ]"
         execute :rm, database_yml_file
       end
@@ -61,7 +61,7 @@ namespace :postgresql do
 
   desc 'Generate database.yml'
   task :generate_database_yml do
-    on roles :app do
+    on roles [:app, fetch(:migration_role)] do
       next if test "[ -e #{database_yml_file} ]"
       execute :mkdir, '-pv', shared_path.join('config')
       upload! pg_template('postgresql.yml.erb'), database_yml_file
