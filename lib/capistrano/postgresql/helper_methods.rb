@@ -15,10 +15,16 @@ module Capistrano
         StringIO.new ERB.new(File.read(config_file)).result(binding)
       end
 
+      # location of database.yml file on clients
       def database_yml_file
         shared_path.join('config/database.yml')
       end
 
+      # location of archetypical database.yml file created on primary db role when user and
+      # database are first created
+      def archetype_database_yml_file
+        deploy_path.join("db/database.yml")
+      end
     end
   end
 end

@@ -31,6 +31,13 @@ namespace :postgresql do
         execute :rm, database_yml_file
       end
     end
+
+    on primary :db do
+      if test "[ -e #{archetype_database_yml_file} ]"
+        execute :rm, archetype_database_yml_file
+      end
+    end
+
     on roles :db do
       psql '-c', %Q{"DROP database #{fetch(:pg_database)};"}
       psql '-c', %Q{"DROP user #{fetch(:pg_user)};"}
@@ -59,12 +66,29 @@ namespace :postgresql do
     end
   end
 
-  desc 'Generate database.yml'
+  # This task creates the archetype database.yml file on the primary db server. This is done once when a
+  # new DB user is created.
+  desc 'Generate database.yml archetype'
+  task :generate_database_yml_archetype do
+    on roles :db, primary: true do
+      next if test "[ -e #{archetype_database_yml_file} ]"
+      execute :mkdir, '-pv', File.dirname(archetype_database_yml_file)
+      upload! pg_template('postgresql.yml.erb'), archetype_database_yml_file
+    end
+  end
+
+  # This task copies the archetype database file on the primary db server to all clients. This is done on
+  # every setup, to ensure new servers get a copy as well.
+  desc 'Copy archetype database.yml from primary db server to clients'
   task :generate_database_yml do
+    database_yml_contents = nil
+    on primary :db do
+      database_yml_contents = download! archetype_database_yml_file
+    end
+
     on release_roles :all do
-      next if test "[ -e #{database_yml_file} ]"
       execute :mkdir, '-pv', shared_path.join('config')
-      upload! pg_template('postgresql.yml.erb'), database_yml_file
+      upload! StringIO.new(database_yml_contents), database_yml_file
     end
   end
 
@@ -73,11 +97,17 @@ namespace :postgresql do
   end
 
   after 'deploy:started', 'postgresql:database_yml_symlink'
+
+  desc 'Postgresql setup tasks'
+  task :setup do
+    invoke "postgresql:create_db_user"
+    invoke "postgresql:create_database"
+    invoke "postgresql:generate_database_yml_archetype"
+    invoke "postgresql:generate_database_yml"
+  end
 end
 
 desc 'Server setup tasks'
 task :setup do
-  invoke 'postgresql:create_db_user'
-  invoke 'postgresql:create_database'
-  invoke 'postgresql:generate_database_yml'
+  invoke "postgresql:setup"
 end
