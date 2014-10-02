@@ -68,6 +68,9 @@ creates database for your app.
 * `postgresql:generate_database_yml`<br/>
 creates a `database.yml` file and copies it to
 `#{shared_path}/config/database.yml` on the server.
+* `postgresql:add_hstore`<br/>
+creates the hstore extension for your application database. This task only runs
+if `:pg_use_hstore` is set to true (see below).
 
 Also, the plugin ensures `config/database.yml` is symlinked from `shared_path`.
 The above tasks are all you need for getting a Rails app to work with PostgreSQL.
@@ -118,6 +121,10 @@ default prostgres user is `pgsql`.
 * `set :pg_system_db`<br/>
 Default `postgres`. Set this if the system database don't have the standard name.
 Usually there should be no reason to change this from the default.
+
+* `set :pg_use_hstore`<br/>
+Default `false`. If true, the `postgresql:add_hstore` task is executed and the hstore extension 
+is added to `:pg_database`.
 
 `database.yml` template-only settings:
 
