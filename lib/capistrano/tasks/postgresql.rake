@@ -17,6 +17,7 @@ namespace :load do
     set :pg_use_hstore, false
     # template only settings
     set :pg_templates_path, 'config/deploy/templates'
+    set :pg_env, -> { fetch(:rails_env) || fetch(:stage) }
     set :pg_pool, 5
     set :pg_encoding, 'unicode'
     set :pg_host, 'localhost'

@@ -24,7 +24,7 @@ process:
 Put the following in your application's `Gemfile`:
 
     group :development do
-      gem 'capistrano', '~> 3.1'
+      gem 'capistrano', '~> 3.2.0'
       gem 'capistrano-postgresql', '~> 3.0'
     end
 
@@ -128,6 +128,10 @@ is added to `:pg_database`.
 
 `database.yml` template-only settings:
 
+* `set :pg_env`<br/>
+DB environment. Defaults to the value of `rails_env` option. If `rails_env` is
+not set, it defaults to `stage` option.
+
 * `set :pg_pool`<br/>
 Pool config in `database.yml` template. Defaults to `5`.
 
@@ -143,7 +147,7 @@ This is the default `database.yml` template that gets copied to the capistrano
 shared directory on the server:
 
 ```yml
-<%= fetch :stage %>:
+<%= fetch :pg_env %>:
   adapter: postgresql
   encoding: <%= pg_encoding %>
   database: <%= pg_database %>
