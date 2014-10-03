@@ -167,16 +167,7 @@ You can configure the template location. For example:
 
 ### More Capistrano automation?
 
-If you'd like to streamline your Capistrano deploys, you might want to check
-these zero-configuration, plug-n-play plugins:
-
-- [capistrano-unicorn-nginx](https://github.com/bruno-/capistrano-unicorn-nginx)<br/>
-no-configuration unicorn and nginx setup with sensible defaults
-- [capistrano-rbenv-install](https://github.com/bruno-/capistrano-rbenv-install)<br/>
-would you like Capistrano to install rubies for you?
-- [capistrano-safe-deploy-to](https://github.com/bruno-/capistrano-safe-deploy-to)<br/>
-if you're annoyed that Capistrano does **not** create a deployment path for the
-app on the server (default `/var/www/myapp`), this is what you need!
+Check out [capistrano-plugins](https://github.com/capistrano-plugins) github org.
 
 ### Contributing and bug reports
 
