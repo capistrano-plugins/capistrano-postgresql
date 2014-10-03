@@ -14,6 +14,7 @@ namespace :load do
     set :pg_password, -> { ask_for_or_generate_password }
     set :pg_system_user, 'postgres'
     set :pg_system_db, 'postgres'
+    set :pg_use_hstore, false
     # template only settings
     set :pg_templates_path, 'config/deploy/templates'
     set :pg_pool, 5
@@ -41,6 +42,14 @@ namespace :postgresql do
     on roles :db do
       psql '-c', %Q{"DROP database #{fetch(:pg_database)};"}
       psql '-c', %Q{"DROP user #{fetch(:pg_user)};"}
+    end
+  end
+
+  desc "Add the hstore extension to postgresql"
+  task :add_hstore do
+    next unless fetch(:pg_use_hstore)
+    on roles :db do
+      psql_on_app_db '-c', %Q{"CREATE EXTENSION IF NOT EXISTS hstore;"}
     end
   end
 
@@ -102,6 +111,7 @@ namespace :postgresql do
   task :setup do
     invoke "postgresql:create_db_user"
     invoke "postgresql:create_database"
+    invoke 'postgresql:add_hstore'
     invoke "postgresql:generate_database_yml_archetype"
     invoke "postgresql:generate_database_yml"
   end
