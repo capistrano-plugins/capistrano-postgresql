@@ -20,7 +20,15 @@ namespace :load do
     set :pg_env, -> { fetch(:rails_env) || fetch(:stage) }
     set :pg_pool, 5
     set :pg_encoding, 'unicode'
-    set :pg_host, 'localhost'
+    # for multiple release nodes automatically use server hostname (IP?) in the database.yml
+    set :pg_host, -> do
+      if release_roles(:all).count == 1 && release_roles(:all).first == primary(:db)
+        'localhost'
+      else
+        primary(:db).hostname
+      end
+    end
+
   end
 end
 
