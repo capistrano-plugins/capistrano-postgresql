@@ -4,6 +4,10 @@
 - enable setting DB environment with `rails_env` option. If `rails_env` is not
   set, `stage` option is used as until now. (@bruno-)
 - create a task that helps with the upgrade to gem version 4 (@bruno-)
+- optionally create a hstore extension on the server (@rhomeister)
+- `database.yml` is now copied to all release_roles (@rhomeister)
+- introduce archetype `database.yml` that is stored on primary `db` node and
+  is copied to all `release` nodes on `setup` task (@rhomeister)
 
 ### v3.0.0, 2014-04-11
 - all the work is moved to the `setup` task
