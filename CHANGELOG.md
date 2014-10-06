@@ -1,6 +1,8 @@
 # Changelog
 
 ### master
+- automatically set `pg_host` option to the IP address of primary `db` host when
+  there are multiple release nodes (@bruno-)
 
 ### v4.0.0, 2014-10-06
 - enable setting DB environment with `rails_env` option. If `rails_env` is not
