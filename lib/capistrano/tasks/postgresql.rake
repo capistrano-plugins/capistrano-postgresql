@@ -26,6 +26,14 @@ end
 
 namespace :postgresql do
 
+  desc 'Steps to upgrade the gem to version 4.0'
+  task :upgrade4 do
+    on roles :db do
+      execute :mkdir, '-pv', File.dirname(archetype_database_yml_file)
+      execute :cp, database_yml_file, archetype_database_yml_file
+    end
+  end
+
   # undocumented, for a reason: drops database. Use with care!
   task :remove_all do
     on release_roles :all do
