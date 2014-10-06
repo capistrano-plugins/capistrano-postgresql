@@ -3,6 +3,7 @@
 ### master
 - enable setting DB environment with `rails_env` option. If `rails_env` is not
   set, `stage` option is used as until now. (@bruno-)
+- create a task that helps with the upgrade to gem version 4 (@bruno-)
 
 ### v3.0.0, 2014-04-11
 - all the work is moved to the `setup` task
