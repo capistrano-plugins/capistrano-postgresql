@@ -1,6 +1,8 @@
 # Changelog
 
 ### master
+
+### v4.1.0, 2014-10-08
 - automatically set `pg_host` option to the IP address of primary `db` host when
   there are multiple release nodes (@bruno-)
 

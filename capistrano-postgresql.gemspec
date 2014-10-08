@@ -16,7 +16,7 @@ Gem::Specification.new do |gem|
     https://github.com/bruno-/capistrano2-postgresql
   EOF
   gem.summary       = %q{Creates application database user and `database.yml` on the server. No SSH login required!}
-  gem.homepage      = "https://github.com/bruno-/capistrano-postgresql"
+  gem.homepage      = "https://github.com/capistrano-plugins/capistrano-postgresql"
 
   gem.license       = "MIT"
 
