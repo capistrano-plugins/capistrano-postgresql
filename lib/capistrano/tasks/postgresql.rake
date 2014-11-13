@@ -75,6 +75,7 @@ namespace :postgresql do
   task :add_extensions do
     next unless Array( fetch(:pg_extensions) ).any?
     on roles :db do
+      # add extensions if extension is present
       Array( fetch(:pg_extensions) ).each do |ext|
         psql_on_app_db '-c', %Q{"CREATE EXTENSION IF NOT EXISTS #{ext};"} if ext.present?
       end
@@ -85,7 +86,8 @@ namespace :postgresql do
   task :remove_extensions do
     next unless Array( fetch(:pg_extensions) ).any?
     on roles :db do
-      Array( fetch(:pg_extensions) ).each do |ext|
+      # remove in reverse order if extension is present
+      Array( fetch(:pg_extensions) ).reverse.each do |ext|
         psql_on_app_db '-c', %Q{"DROP EXTENSION IF EXISTS #{ext};"} if ext.present?
       end
     end
