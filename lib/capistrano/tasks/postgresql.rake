@@ -152,6 +152,7 @@ namespace :postgresql do
     invoke "postgresql:create_db_user"
     invoke "postgresql:create_database"
     invoke 'postgresql:add_hstore'
+    invoke 'postgresql:add_extensions'
     invoke "postgresql:generate_database_yml_archetype"
     invoke "postgresql:generate_database_yml"
   end
