@@ -15,6 +15,7 @@ namespace :load do
     set :pg_system_user, 'postgres'
     set :pg_system_db, 'postgres'
     set :pg_use_hstore, false
+    set :pg_extensions, []
     # template only settings
     set :pg_templates_path, 'config/deploy/templates'
     set :pg_env, -> { fetch(:rails_env) || fetch(:stage) }
@@ -67,6 +68,26 @@ namespace :postgresql do
     next unless fetch(:pg_use_hstore)
     on roles :db do
       psql_on_app_db '-c', %Q{"CREATE EXTENSION IF NOT EXISTS hstore;"}
+    end
+  end
+
+  desc "Add pg_extension to postgresql db"
+  task :add_extensions do
+    next unless Array( fetch(:pg_extensions) ).any?
+    on roles :db do
+      Array( fetch(:pg_extensions) ).each do |ext|
+        psql_on_app_db '-c', %Q{"CREATE EXTENSION IF NOT EXISTS #{ext};"} if ext.present?
+      end
+    end
+  end
+
+  desc "Remove pg_extension from postgresql db"
+  task :remove_extensions do
+    next unless Array( fetch(:pg_extensions) ).any?
+    on roles :db do
+      Array( fetch(:pg_extensions) ).each do |ext|
+        psql_on_app_db '-c', %Q{"DROP EXTENSION IF EXISTS #{ext};"} if ext.present?
+      end
     end
   end
 
