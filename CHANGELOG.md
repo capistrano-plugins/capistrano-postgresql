@@ -2,6 +2,9 @@
 
 ### master
 
+### v4.2.0, 2014-11-13
+- add `pg_extensions` option and `add_extensions` or `remove_extensions` methods, to handle various extensions as needed (@twetzel)
+
 ### v4.1.0, 2014-10-08
 - automatically set `pg_host` option to the IP address of primary `db` host when
   there are multiple release nodes (@bruno-)
