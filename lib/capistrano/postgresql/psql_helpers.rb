@@ -4,6 +4,7 @@ module Capistrano
 
       # returns true or false depending on the remote command exit status
       def psql(*args)
+        args.unshift("-U #{fetch(:pg_system_user)}") if fetch(:pg_no_sudo)
         psql_on_db(fetch(:pg_system_db), *args)
       end
 
