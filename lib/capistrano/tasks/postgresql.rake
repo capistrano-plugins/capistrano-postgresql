@@ -119,7 +119,7 @@ namespace :postgresql do
   # new DB user is created.
   desc 'Generate database.yml archetype'
   task :generate_database_yml_archetype do
-    on roles :db, primary: true do
+    on primary :db do
       next if test "[ -e #{archetype_database_yml_file} ]"
       execute :mkdir, '-pv', File.dirname(archetype_database_yml_file)
       upload! pg_template('postgresql.yml.erb'), archetype_database_yml_file

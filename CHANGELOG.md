@@ -2,6 +2,9 @@
 
 ### master
 
+### v4.2.1, 2015-04-22
+- change `on roles(:db, primary: true)` to the correct `on primary :db`
+
 ### v4.2.0, 2014-11-13
 - add `pg_extensions` option and `add_extensions` or `remove_extensions` methods, to handle various extensions as needed (@twetzel)
 
