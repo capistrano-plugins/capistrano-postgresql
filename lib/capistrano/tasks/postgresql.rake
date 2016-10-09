@@ -97,7 +97,7 @@ namespace :postgresql do
   task :create_db_user do
     on roles :db do
       next if db_user_exists? fetch(:pg_user)
-      unless psql '-c', %Q{"CREATE user #{fetch(:pg_user)} WITH password '#{fetch(:pg_password)}';"}
+      unless psql_simple '-c', %Q{"CREATE user #{fetch(:pg_user)} WITH password '#{fetch(:pg_password)}';"}
         error 'postgresql: creating database user failed!'
         exit 1
       end
