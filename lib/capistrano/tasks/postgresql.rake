@@ -140,7 +140,7 @@ namespace :postgresql do
 
     on release_roles :all do
       execute :mkdir, '-pv', File.dirname(database_yml_file)
-      Net::SCP.upload!(fetch(:pg_host), fetch(:system_user), StringIO.new(database_yml_contents), database_yml_file)
+      Net::SCP.upload!(self.host.hostname, fetch(:system_user), StringIO.new(database_yml_contents), database_yml_file)
     end
   end
 
