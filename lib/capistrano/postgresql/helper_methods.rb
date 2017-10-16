@@ -17,13 +17,15 @@ module Capistrano
 
       # location of database.yml file on clients
       def database_yml_file
+        raise(":deploy_to in your app/config/deploy/\#{environment}.rb file cannot contain ~") if shared_path.to_s.include?('~') # issues/27
         shared_path.join('config/database.yml')
       end
 
       # location of archetypical database.yml file created on primary db role when user and
       # database are first created
       def archetype_database_yml_file
-        deploy_path.join("db/database.yml")
+        raise(":deploy_to in your app/config/deploy/\#{environment}.rb file cannot contain ~") if shared_path.to_s.include?('~') # issues/27
+        deploy_path.join('db/database.yml')
       end
     end
   end

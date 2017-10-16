@@ -2,6 +2,8 @@ require 'capistrano/postgresql/helper_methods'
 require 'capistrano/postgresql/password_helpers'
 require 'capistrano/postgresql/psql_helpers'
 
+require 'pry'
+
 include Capistrano::Postgresql::HelperMethods
 include Capistrano::Postgresql::PasswordHelpers
 include Capistrano::Postgresql::PsqlHelpers
@@ -22,6 +24,7 @@ namespace :load do
     set :pg_pool, 5
     set :pg_encoding, 'unicode'
     # for multiple release nodes automatically use server hostname (IP?) in the database.yml
+    set :system_user, 'root'
     set :pg_host, -> do
       if release_roles(:all).count == 1 && release_roles(:all).first == primary(:db)
         'localhost'
@@ -58,12 +61,12 @@ namespace :postgresql do
     end
 
     on roles :db do
-      psql '-c', %Q{"DROP database #{fetch(:pg_database)};"}
-      psql '-c', %Q{"DROP user #{fetch(:pg_user)};"}
+      psql_simple '-c', %Q{"DROP database #{fetch(:pg_database)};"}
+      psql_simple '-c', %Q{"DROP user #{fetch(:pg_user)};"}
     end
   end
 
-  desc "Add the hstore extension to postgresql"
+  desc 'Add the hstore extension to postgresql'
   task :add_hstore do
     next unless fetch(:pg_use_hstore)
     on roles :db do
@@ -71,7 +74,7 @@ namespace :postgresql do
     end
   end
 
-  desc "Add pg_extension to postgresql db"
+  desc 'Add pg_extension to postgresql db'
   task :add_extensions do
     next unless Array( fetch(:pg_extensions) ).any?
     on roles :db do
@@ -82,7 +85,7 @@ namespace :postgresql do
     end
   end
 
-  desc "Remove pg_extension from postgresql db"
+  desc 'Remove pg_extension from postgresql db'
   task :remove_extensions do
     next unless Array( fetch(:pg_extensions) ).any?
     on roles :db do
@@ -97,7 +100,7 @@ namespace :postgresql do
   task :create_db_user do
     on roles :db do
       next if db_user_exists? fetch(:pg_user)
-      unless psql '-c', %Q{"CREATE user #{fetch(:pg_user)} WITH password '#{fetch(:pg_password)}';"}
+      unless psql_simple '-c', %Q{"CREATE USER #{fetch(:pg_user)} WITH PASSWORD '#{fetch(:pg_password)}';"}
         error 'postgresql: creating database user failed!'
         exit 1
       end
@@ -108,7 +111,7 @@ namespace :postgresql do
   task :create_database do
     on roles :db do
       next if database_exists? fetch(:pg_database)
-      unless psql '-c', %Q{"CREATE database #{fetch(:pg_database)} owner #{fetch(:pg_user)};"}
+      unless psql_simple '-c', %Q{"CREATE DATABASE #{fetch(:pg_database)} OWNER #{fetch(:pg_user)};"}
         error 'postgresql: creating database failed!'
         exit 1
       end
@@ -122,7 +125,7 @@ namespace :postgresql do
     on primary :db do
       next if test "[ -e #{archetype_database_yml_file} ]"
       execute :mkdir, '-pv', File.dirname(archetype_database_yml_file)
-      upload! pg_template('postgresql.yml.erb'), archetype_database_yml_file
+      Net::SCP.upload!(fetch(:pg_host), fetch(:system_user), pg_template('postgresql.yml.erb'), archetype_database_yml_file)
     end
   end
 
@@ -136,8 +139,8 @@ namespace :postgresql do
     end
 
     on release_roles :all do
-      execute :mkdir, '-pv', shared_path.join('config')
-      upload! StringIO.new(database_yml_contents), database_yml_file
+      execute :mkdir, '-pv', File.dirname(database_yml_file)
+      Net::SCP.upload!(fetch(:pg_host), fetch(:system_user), StringIO.new(database_yml_contents), database_yml_file)
     end
   end
 
@@ -149,12 +152,12 @@ namespace :postgresql do
 
   desc 'Postgresql setup tasks'
   task :setup do
-    invoke "postgresql:create_db_user"
-    invoke "postgresql:create_database"
+    invoke 'postgresql:create_db_user'
+    invoke 'postgresql:create_database'
     invoke 'postgresql:add_hstore'
     invoke 'postgresql:add_extensions'
-    invoke "postgresql:generate_database_yml_archetype"
-    invoke "postgresql:generate_database_yml"
+    invoke 'postgresql:generate_database_yml_archetype'
+    invoke 'postgresql:generate_database_yml'
   end
 end
 

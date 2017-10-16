@@ -21,6 +21,11 @@ module Capistrano
       end
 
       private
+
+      def psql_simple(*args)
+        test :sudo, "-u #{fetch(:pg_system_user)} psql", *args
+      end
+
       def psql_on_db(db_name, *args)
         test :sudo, "-u #{fetch(:pg_system_user)} psql -d #{db_name}", *args
       end
