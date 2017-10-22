@@ -2,8 +2,6 @@ require 'capistrano/postgresql/helper_methods'
 require 'capistrano/postgresql/password_helpers'
 require 'capistrano/postgresql/psql_helpers'
 
-require 'pry'
-
 include Capistrano::Postgresql::HelperMethods
 include Capistrano::Postgresql::PasswordHelpers
 include Capistrano::Postgresql::PsqlHelpers
@@ -32,7 +30,6 @@ namespace :load do
         primary(:db).hostname
       end
     end
-
   end
 end
 
@@ -61,8 +58,8 @@ namespace :postgresql do
     end
 
     on roles :db do
-      psql_simple '-c', %Q{"DROP database #{fetch(:pg_database)};"}
-      psql_simple '-c', %Q{"DROP user #{fetch(:pg_user)};"}
+      psql_simple '-c', %Q{"DROP database \\"#{fetch(:pg_database)}\\";"}
+      psql_simple '-c', %Q{"DROP user \\"#{fetch(:pg_user)}\\";"}
     end
   end
 
@@ -100,7 +97,7 @@ namespace :postgresql do
   task :create_db_user do
     on roles :db do
       next if db_user_exists? fetch(:pg_user)
-      unless psql_simple '-c', %Q{"CREATE USER #{fetch(:pg_user)} WITH PASSWORD '#{fetch(:pg_password)}';"}
+      unless psql_simple '-c', %Q{"CREATE ROLE \\"#{fetch(:pg_user)}\\" PASSWORD '#{fetch(:pg_password)}';"}
         error 'postgresql: creating database user failed!'
         exit 1
       end
@@ -111,7 +108,7 @@ namespace :postgresql do
   task :create_database do
     on roles :db do
       next if database_exists? fetch(:pg_database)
-      unless psql_simple '-c', %Q{"CREATE DATABASE #{fetch(:pg_database)} OWNER #{fetch(:pg_user)};"}
+      unless psql_simple '-c', %Q{"CREATE DATABASE \\"#{fetch(:pg_database)}\\" OWNER \\"#{fetch(:pg_user)}\\";"}
         error 'postgresql: creating database failed!'
         exit 1
       end
