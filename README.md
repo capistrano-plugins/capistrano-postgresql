@@ -50,6 +50,10 @@ Or just install
 [capistrano-safe-deploy-to](https://github.com/capistrano-plugins/capistrano-safe-deploy-to)
 plugin and don't think about it.
 
+Within your app/config/deploy/#{environment}.rb files, make sure to specify:
+
+    set :system_user, 'ssh_user' # defaults to root user
+
 To setup the server(s), run:
 
     $ bundle exec cap production setup
