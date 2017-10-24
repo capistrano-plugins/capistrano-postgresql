@@ -63,6 +63,30 @@ namespace :postgresql do
     end
   end
 
+  task :remove_yml_files do
+    on release_roles :all do
+      if test "[ -e #{database_yml_file} ]"
+        execute :rm, database_yml_file
+      end
+    end
+    on primary :db do
+      if test "[ -e #{archetype_database_yml_file} ]"
+        execute :rm, archetype_database_yml_file
+      end
+    end
+  end
+
+  desc 'Remove pg_extension from postgresql db'
+  task :remove_extensions do
+    next unless Array( fetch(:pg_extensions) ).any?
+    on roles :db do
+      # remove in reverse order if extension is present
+      Array( fetch(:pg_extensions) ).reverse.each do |ext|
+        psql_on_app_db '-c', %Q{"DROP EXTENSION IF EXISTS #{ext};"} unless [nil, false, ""].include?(ext)
+      end
+    end
+  end
+
   desc 'Add the hstore extension to postgresql'
   task :add_hstore do
     next unless fetch(:pg_use_hstore)
@@ -77,18 +101,7 @@ namespace :postgresql do
     on roles :db do
       # add extensions if extension is present
       Array( fetch(:pg_extensions) ).each do |ext|
-        psql_on_app_db '-c', %Q{"CREATE EXTENSION IF NOT EXISTS \\"#{ext}\\";"} unless [nil, false, ""].include?(ext)
-      end
-    end
-  end
-
-  desc 'Remove pg_extension from postgresql db'
-  task :remove_extensions do
-    next unless Array( fetch(:pg_extensions) ).any?
-    on roles :db do
-      # remove in reverse order if extension is present
-      Array( fetch(:pg_extensions) ).reverse.each do |ext|
-        psql_on_app_db '-c', %Q{"DROP EXTENSION IF EXISTS \\"#{ext}\\";"} unless [nil, false, ""].include?(ext)
+        psql_on_app_db '-c', %Q{"CREATE EXTENSION IF NOT EXISTS #{ext};"} unless [nil, false, ""].include?(ext)
       end
     end
   end
@@ -149,6 +162,7 @@ namespace :postgresql do
 
   desc 'Postgresql setup tasks'
   task :setup do
+    invoke 'postgresql:remove_yml_files' # Delete old yml files. Allows you to avoid having to manually delete the files on your web/app servers to get a new pool size for example.
     invoke 'postgresql:create_db_user'
     invoke 'postgresql:create_database'
     invoke 'postgresql:add_hstore'
