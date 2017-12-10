@@ -16,12 +16,12 @@ module Capistrano
         psql_on_db(fetch(:pg_database), *args)
       end
 
-      def db_user_exists?(name)
-        psql_on_db '-tAc', %Q{"SELECT 1 FROM pg_roles WHERE rolname='#{name}';" | grep -q 1}
+      def db_user_exists?
+        psql_on_db fetch(:pg_database),'-tAc', %Q{"SELECT 1 FROM pg_roles WHERE rolname='#{fetch(:pg_user)}';" | grep -q 1}
       end
 
-      def database_exists?(db_name)
-        psql_on_db '-tAc', %Q{"SELECT 1 FROM pg_database WHERE datname='#{db_name}';" | grep -q 1}
+      def database_exists?
+        psql_on_db fetch(:pg_database), '-tAc', %Q{"SELECT 1 FROM pg_database WHERE datname='#{fetch(:pg_database)}';" | grep -q 1}
       end
 
       private

@@ -110,7 +110,7 @@ namespace :postgresql do
   desc 'Create DB user'
   task :create_db_user do
     on roles :db do
-      next if db_user_exists? fetch(:pg_user)
+      next if db_user_exists?
       # If you use CREATE USER instead of CREATE ROLE the LOGIN right is granted automatically; otherwise you must specify it in the WITH clause of the CREATE statement.
       unless psql '-c', %Q{"CREATE USER \\"#{fetch(:pg_user)}\\" PASSWORD '#{fetch(:pg_password)}';"}
         error 'postgresql: creating database user failed!'
@@ -122,7 +122,7 @@ namespace :postgresql do
   desc 'Create database'
   task :create_database do
     on roles :db do
-      next if database_exists? fetch(:pg_database)
+      next if database_exists?
       unless psql '-c', %Q{"CREATE DATABASE \\"#{fetch(:pg_database)}\\" OWNER \\"#{fetch(:pg_user)}\\";"}
         error 'postgresql: creating database failed!'
         exit 1
@@ -164,6 +164,7 @@ namespace :postgresql do
 
   desc 'Postgresql setup tasks'
   task :setup do
+    puts "* ============================= * \n All psql commands will be run #{fetch(:pg_without_sudo) ? 'without sudo' : 'with sudo'}\n You can modify this in your deploy/{env}.rb by setting the pg_without_sudo boolean \n* ============================= *"
     invoke 'postgresql:remove_yml_files' # Delete old yml files. Allows you to avoid having to manually delete the files on your web/app servers to get a new pool size for example.
     invoke 'postgresql:create_db_user'
     invoke 'postgresql:create_database'
