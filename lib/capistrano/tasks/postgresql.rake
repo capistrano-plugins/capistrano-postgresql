@@ -2,17 +2,21 @@ require 'capistrano/postgresql/helper_methods'
 require 'capistrano/postgresql/password_helpers'
 require 'capistrano/postgresql/psql_helpers'
 
+require 'pry'
+
 include Capistrano::Postgresql::HelperMethods
 include Capistrano::Postgresql::PasswordHelpers
 include Capistrano::Postgresql::PsqlHelpers
 
 namespace :load do
   task :defaults do
+    set :system_user, 'root' # Used for SCP commands to deploy files to remote servers
     set :pg_database, -> { "#{fetch(:application)}_#{fetch(:stage)}" }
     set :pg_user, -> { fetch(:pg_database) }
     set :pg_ask_for_password, false
     set :pg_password, -> { ask_for_or_generate_password }
     set :pg_system_user, 'postgres'
+    set :pg_without_sudo, false # issues/22 | Contributed by snake66
     set :pg_system_db, 'postgres'
     set :pg_use_hstore, false
     set :pg_extensions, []
@@ -22,7 +26,6 @@ namespace :load do
     set :pg_pool, 5
     set :pg_encoding, 'unicode'
     # for multiple release nodes automatically use server hostname (IP?) in the database.yml
-    set :system_user, 'root'
     set :pg_host, -> do
       if release_roles(:all).count == 1 && release_roles(:all).first == primary(:db)
         'localhost'
@@ -58,8 +61,8 @@ namespace :postgresql do
     end
 
     on roles :db do
-      psql_simple '-c', %Q{"DROP database \\"#{fetch(:pg_database)}\\";"}
-      psql_simple '-c', %Q{"DROP user \\"#{fetch(:pg_user)}\\";"}
+      psql '-c', %Q{"DROP database \\"#{fetch(:pg_database)}\\";"}
+      psql '-c', %Q{"DROP user \\"#{fetch(:pg_user)}\\";"}
     end
   end
 
@@ -99,9 +102,14 @@ namespace :postgresql do
   task :add_extensions do
     next unless Array( fetch(:pg_extensions) ).any?
     on roles :db do
-      # add extensions if extension is present
       Array( fetch(:pg_extensions) ).each do |ext|
-        psql_on_app_db '-c', %Q{"CREATE EXTENSION IF NOT EXISTS #{ext};"} unless [nil, false, ""].include?(ext)
+        next if [nil, false, ""].include?(ext)
+        if psql_on_app_db '-c', %Q{"CREATE EXTENSION IF NOT EXISTS #{ext};"}
+          puts "- Added extension #{ext} to #{fetch(:pg_database)}"
+        else
+          error "postgresql: adding extension #{ext} failed!"
+          exit 1
+        end
       end
     end
   end
@@ -109,9 +117,9 @@ namespace :postgresql do
   desc 'Create DB user'
   task :create_db_user do
     on roles :db do
-      next if db_user_exists? fetch(:pg_user)
+      next if db_user_exists?
       # If you use CREATE USER instead of CREATE ROLE the LOGIN right is granted automatically; otherwise you must specify it in the WITH clause of the CREATE statement.
-      unless psql_simple '-c', %Q{"CREATE USER \\"#{fetch(:pg_user)}\\" PASSWORD '#{fetch(:pg_password)}';"}
+      unless psql '-c', %Q{"CREATE USER \\"#{fetch(:pg_user)}\\" PASSWORD '#{fetch(:pg_password)}';"}
         error 'postgresql: creating database user failed!'
         exit 1
       end
@@ -121,8 +129,8 @@ namespace :postgresql do
   desc 'Create database'
   task :create_database do
     on roles :db do
-      next if database_exists? fetch(:pg_database)
-      unless psql_simple '-c', %Q{"CREATE DATABASE \\"#{fetch(:pg_database)}\\" OWNER \\"#{fetch(:pg_user)}\\";"}
+      next if database_exists?
+      unless psql '-c', %Q{"CREATE DATABASE \\"#{fetch(:pg_database)}\\" OWNER \\"#{fetch(:pg_user)}\\";"}
         error 'postgresql: creating database failed!'
         exit 1
       end
@@ -163,6 +171,7 @@ namespace :postgresql do
 
   desc 'Postgresql setup tasks'
   task :setup do
+    puts "* ============================= * \n All psql commands will be run #{fetch(:pg_without_sudo) ? 'without sudo' : 'with sudo'}\n You can modify this in your deploy/{env}.rb by setting the pg_without_sudo boolean \n* ============================= *"
     invoke 'postgresql:remove_yml_files' # Delete old yml files. Allows you to avoid having to manually delete the files on your web/app servers to get a new pool size for example.
     invoke 'postgresql:create_db_user'
     invoke 'postgresql:create_database'

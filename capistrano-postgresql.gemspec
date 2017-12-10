@@ -4,10 +4,10 @@ $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
 require 'capistrano/postgresql/version'
 
 Gem::Specification.new do |gem|
-  gem.name          = "capistrano-postgresql"
+  gem.name          = 'capistrano-postgresql'
   gem.version       = Capistrano::Postgresql::VERSION
-  gem.authors       = ["Bruno Sutic", "Ruben Stranders"]
-  gem.email         = ["bruno.sutic@gmail.com", "r.stranders@gmail.com"]
+  gem.authors       = ['Bruno Sutic', 'Ruben Stranders']
+  gem.email         = ['bruno.sutic@gmail.com', 'r.stranders@gmail.com']
   gem.description   = <<-EOF.gsub(/^\s+/, '')
     Capistrano tasks for PostgreSQL configuration and management for Rails
     apps. Manages `database.yml` template on the server.
@@ -16,14 +16,13 @@ Gem::Specification.new do |gem|
     https://github.com/bruno-/capistrano2-postgresql
   EOF
   gem.summary       = %q{Creates application database user and `database.yml` on the server. No SSH login required!}
-  gem.homepage      = "https://github.com/capistrano-plugins/capistrano-postgresql"
+  gem.homepage      = 'https://github.com/capistrano-plugins/capistrano-postgresql'
 
-  gem.license       = "MIT"
+  gem.license       = 'MIT'
 
   gem.files         = `git ls-files`.split($/)
-  gem.require_paths = ["lib"]
+  gem.require_paths = ['lib']
 
   gem.add_dependency 'capistrano', '>= 3.0'
-
-  gem.add_development_dependency "rake"
+  gem.add_development_dependency 'rake'
 end
