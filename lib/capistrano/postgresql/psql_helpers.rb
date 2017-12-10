@@ -27,6 +27,7 @@ module Capistrano
       private
 
         def psql_on_db(db_name, *args)
+          args.unshift("-U #{fetch(:pg_system_user)}") if fetch(:pg_without_sudo) # Add the :pg_system_user to psql command since we aren't using sudo anymore
           cmd = [ :psql, "-d #{db_name}", *args ]
           cmd = [ :sudo, "-u #{fetch(:pg_system_user)}", *cmd ] unless fetch(:pg_without_sudo)
           test *cmd.flatten

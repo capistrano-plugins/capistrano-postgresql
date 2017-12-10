@@ -2,6 +2,8 @@ require 'capistrano/postgresql/helper_methods'
 require 'capistrano/postgresql/password_helpers'
 require 'capistrano/postgresql/psql_helpers'
 
+require 'pry'
+
 include Capistrano::Postgresql::HelperMethods
 include Capistrano::Postgresql::PasswordHelpers
 include Capistrano::Postgresql::PsqlHelpers
@@ -100,9 +102,14 @@ namespace :postgresql do
   task :add_extensions do
     next unless Array( fetch(:pg_extensions) ).any?
     on roles :db do
-      # add extensions if extension is present
       Array( fetch(:pg_extensions) ).each do |ext|
-        psql_on_app_db '-c', %Q{"CREATE EXTENSION IF NOT EXISTS #{ext};"} unless [nil, false, ""].include?(ext)
+        next if [nil, false, ""].include?(ext)
+        if psql_on_app_db '-c', %Q{"CREATE EXTENSION IF NOT EXISTS #{ext};"}
+          puts "- Added extension #{ext} to #{fetch(:pg_database)}"
+        else
+          error "postgresql: adding extension #{ext} failed!"
+          exit 1
+        end
       end
     end
   end
