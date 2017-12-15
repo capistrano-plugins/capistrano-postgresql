@@ -2,8 +2,6 @@ require 'capistrano/postgresql/helper_methods'
 require 'capistrano/postgresql/password_helpers'
 require 'capistrano/postgresql/psql_helpers'
 
-require 'pry'
-
 include Capistrano::Postgresql::HelperMethods
 include Capistrano::Postgresql::PasswordHelpers
 include Capistrano::Postgresql::PsqlHelpers
