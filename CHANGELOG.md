@@ -2,6 +2,30 @@
 
 ### master
 
+## v4.6.1, 2017-12-15
+- Removing require 'pry' (silly mistake)
+
+## v4.6.0, 2017-12-10
+- :pg_without_sudo added (thanks to snake66) so you can run remote psql commands on environments without sudo available.
+- Fixed exists? methods, removing the need for arguments
+- Printing sudo status to capistrano STDOUT
+
+## v4.4.1, 2017-10-26
+- Switched back from CREATE ROLE to CREATE USER (so LOGIN rights are granted automatically)
+
+## v4.4.0, 2017-10-26
+- :remove_yml_files task added to clean up old files on remote server
+
+## v4.3.1, 2017-10-21
+- Fixed quoting on CREATE USER so we can include integers in usernames & Quoted other values like CREATE DATABASE so they can include integers too
+- Changed to createuser convention "CREATE ROLE" instead of USER (v4.4.1 reversed this)
+
+## v4.3.0, 2017-10-21
+- issues/27: raise on :deploy_to with ~ in it
+- Net::SCP.upload! to replace old upload! for using :system_user
+- issues/31 : psql -> psql_simple so user can be created regardless of database existence
+- General cleanup
+
 ### v4.2.1, 2015-04-22
 - change `on roles(:db, primary: true)` to the correct `on primary :db`
 
