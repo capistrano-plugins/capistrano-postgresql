@@ -1,6 +1,8 @@
 # Changelog
 
 ### master
+## v4.7.0, 2017-12-19
+- Fixed create database and user tasks to use (:pg_system_db) and psql_on_db
 
 ## v4.6.1, 2017-12-15
 - Removing require 'pry' (silly mistake)
