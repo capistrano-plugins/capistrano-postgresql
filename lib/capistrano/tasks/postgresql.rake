@@ -142,7 +142,7 @@ namespace :postgresql do
     on primary :db do
       next if test "[ -e #{archetype_database_yml_file} ]"
       execute :mkdir, '-pv', File.dirname(archetype_database_yml_file)
-      Net::SCP.upload!(fetch(:pg_host), fetch(:system_user), pg_template('postgresql.yml.erb'), archetype_database_yml_file)
+      Net::SCP.upload!(self.host.hostname, fetch(:system_user), pg_template('postgresql.yml.erb'), archetype_database_yml_file)
     end
   end
 
