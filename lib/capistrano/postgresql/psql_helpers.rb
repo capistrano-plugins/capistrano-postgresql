@@ -17,7 +17,7 @@ module Capistrano
       end
 
       def db_user_exists?
-        psql_on_db fetch(:pg_system_db),'-tAc', %Q{"SELECT 1 FROM pg_roles WHERE rolname='#{fetch(:pg_user)}';" | grep -q 1}
+        psql_on_db fetch(:pg_system_db),'-tAc', %Q{"SELECT 1 FROM pg_roles WHERE rolname='#{fetch(:pg_username)}';" | grep -q 1}
       end
 
       def database_exists?

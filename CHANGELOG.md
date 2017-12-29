@@ -1,6 +1,12 @@
 # Changelog
 
 ### master
+
+## v4.8.0, 2017-12-28
+- issues/47: Added new pg_template helper code to handle maintaining the randomly generated password, :pg_ask_for_password, and user set pg_password
+- Added the rest of the supported options for the database.yml
+- Generate cleanup of notes
+
 ## v4.7.0, 2017-12-19
 - Fixed create database and user tasks to use (:pg_system_db) and psql_on_db
 
