@@ -8,29 +8,27 @@ include Capistrano::Postgresql::PsqlHelpers
 
 namespace :load do
   task :defaults do
-    set :system_user, 'root' # Used for SCP commands to deploy files to remote servers
+    # Options necessary for database.yml creation (pg_template|helper_methods.rb)
+    set :pg_env, -> { fetch(:rails_env) || fetch(:stage) }
+    set :pg_encoding, 'unicode'
     set :pg_database, -> { "#{fetch(:application)}_#{fetch(:stage)}" }
-    set :pg_user, -> { fetch(:pg_database) }
-    set :pg_ask_for_password, false
-    set :pg_password, -> { ask_for_or_generate_password }
-    set :pg_system_user, 'postgres'
+    set :pg_pool, 5
+    set :pg_username, -> { fetch(:pg_database) }
+    set :pg_password, nil
+    set :pg_socket, ''
+    set :pg_host, -> do # for multiple release nodes automatically use server hostname (IP?) in the database.yml
+      release_roles(:all).count == 1 && release_roles(:all).first == primary(:db) ? 'localhost' : primary(:db).hostname
+    end
+    set :pg_port, 5432
+    set :pg_timeout, 5000 # 5 seconds (rails default)
+    # General settings
     set :pg_without_sudo, false # issues/22 | Contributed by snake66
+    set :pg_system_user, 'postgres'
+    set :pg_ask_for_password, false
     set :pg_system_db, 'postgres'
     set :pg_use_hstore, false
     set :pg_extensions, []
-    # template only settings
     set :pg_templates_path, 'config/deploy/templates'
-    set :pg_env, -> { fetch(:rails_env) || fetch(:stage) }
-    set :pg_pool, 5
-    set :pg_encoding, 'unicode'
-    # for multiple release nodes automatically use server hostname (IP?) in the database.yml
-    set :pg_host, -> do
-      if release_roles(:all).count == 1 && release_roles(:all).first == primary(:db)
-        'localhost'
-      else
-        primary(:db).hostname
-      end
-    end
   end
 end
 
@@ -60,19 +58,15 @@ namespace :postgresql do
 
     on roles :db do
       psql '-c', %Q{"DROP database \\"#{fetch(:pg_database)}\\";"}
-      psql '-c', %Q{"DROP user \\"#{fetch(:pg_user)}\\";"}
+      psql '-c', %Q{"DROP user \\"#{fetch(:pg_username)}\\";"}
     end
   end
 
-  task :remove_yml_files do
-    on release_roles :all do
+  task :remove_app_database_yml_files do
+    # We should never delete archetype files. The generate_database_yml_archetype task will handle updates
+    on release_roles :app do
       if test "[ -e #{database_yml_file} ]"
         execute :rm, database_yml_file
-      end
-    end
-    on primary :db do
-      if test "[ -e #{archetype_database_yml_file} ]"
-        execute :rm, archetype_database_yml_file
       end
     end
   end
@@ -101,7 +95,7 @@ namespace :postgresql do
     next unless Array( fetch(:pg_extensions) ).any?
     on roles :db do
       Array( fetch(:pg_extensions) ).each do |ext|
-        next if [nil, false, ""].include?(ext)
+        next if [nil, false, ''].include?(ext)
         if psql_on_app_db '-c', %Q{"CREATE EXTENSION IF NOT EXISTS #{ext};"}
           puts "- Added extension #{ext} to #{fetch(:pg_database)}"
         else
@@ -116,7 +110,7 @@ namespace :postgresql do
   task :create_database do
     on roles :db do
       next if database_exists?
-      unless psql_on_db fetch(:pg_system_db), '-c', %Q{"CREATE DATABASE \\"#{fetch(:pg_database)}\\" OWNER \\"#{fetch(:pg_user)}\\";"}
+      unless psql_on_db fetch(:pg_system_db), '-c', %Q{"CREATE DATABASE \\"#{fetch(:pg_database)}\\" OWNER \\"#{fetch(:pg_username)}\\";"}
         error 'postgresql: creating database failed!'
         exit 1
       end
@@ -128,26 +122,28 @@ namespace :postgresql do
     on roles :db do
       next if db_user_exists?
       # If you use CREATE USER instead of CREATE ROLE the LOGIN right is granted automatically; otherwise you must specify it in the WITH clause of the CREATE statement.
-      unless psql_on_db fetch(:pg_system_db), '-c', %Q{"CREATE USER \\"#{fetch(:pg_user)}\\" PASSWORD '#{fetch(:pg_password)}';"}
+      unless psql_on_db fetch(:pg_system_db), '-c', %Q{"CREATE USER \\"#{fetch(:pg_username)}\\" PASSWORD '#{fetch(:pg_password)}';"}
         error 'postgresql: creating database user failed!'
         exit 1
       end
     end
   end
 
-  # This task creates the archetype database.yml file on the primary db server. This is done once when a
-  # new DB user is created.
+  # This task creates the archetype database.yml file on the primary db server. This is done once when a new DB user is created.
   desc 'Generate database.yml archetype'
   task :generate_database_yml_archetype do
     on primary :db do
-      next if test "[ -e #{archetype_database_yml_file} ]"
-      execute :mkdir, '-pv', File.dirname(archetype_database_yml_file)
-      Net::SCP.upload!(fetch(:pg_host), fetch(:system_user), pg_template('postgresql.yml.erb'), archetype_database_yml_file)
+      if test "[ -e #{archetype_database_yml_file} ]" # Archetype already exists. Just update values that changed. Make sure we don't overwrite it to protect generated passwords.
+        Net::SCP.upload!(self.host.hostname, self.host.user,StringIO.new(pg_template(true, download!(archetype_database_yml_file))),archetype_database_yml_file)
+      else
+        ask_for_or_generate_password if fetch(:pg_password).nil? || fetch(:pg_ask_for_password) == true # Avoid setting a random password or one from user prompt
+        execute :mkdir, '-pv', File.dirname(archetype_database_yml_file)
+        Net::SCP.upload!(self.host.hostname,self.host.user,StringIO.new(pg_template),archetype_database_yml_file)
+      end
     end
   end
 
-  # This task copies the archetype database file on the primary db server to all clients. This is done on
-  # every setup, to ensure new servers get a copy as well.
+  # This task copies the archetype database file on the primary db server to all clients. This is done on every setup, to ensure new servers get a copy as well.
   desc 'Copy archetype database.yml from primary db server to clients'
   task :generate_database_yml do
     database_yml_contents = nil
@@ -157,7 +153,7 @@ namespace :postgresql do
 
     on release_roles :all do
       execute :mkdir, '-pv', File.dirname(database_yml_file)
-      Net::SCP.upload!(self.host.hostname, fetch(:system_user), StringIO.new(database_yml_contents), database_yml_file)
+      Net::SCP.upload!(self.host.hostname, self.host.user, StringIO.new(database_yml_contents), database_yml_file)
     end
   end
 
@@ -170,7 +166,7 @@ namespace :postgresql do
   desc 'Postgresql setup tasks'
   task :setup do
     puts "* ============================= * \n All psql commands will be run #{fetch(:pg_without_sudo) ? 'without sudo' : 'with sudo'}\n You can modify this in your deploy/{env}.rb by setting the pg_without_sudo boolean \n* ============================= *"
-    invoke 'postgresql:remove_yml_files' # Delete old yml files. Allows you to avoid having to manually delete the files on your web/app servers to get a new pool size for example.
+    invoke 'postgresql:remove_app_database_yml_files' # Delete old yml files on NON-DB hosts. Allows you to avoid having to manually delete the files on your web/app servers to get a new pool size for example. Don't touch the archetype file to avoid deleting generated passwords
     invoke 'postgresql:create_db_user'
     invoke 'postgresql:create_database'
     invoke 'postgresql:add_hstore'
