@@ -5,7 +5,7 @@
 ## v4.8.0, 2017-12-28
 - issues/47: Added new pg_template helper code to handle maintaining the randomly generated password, :pg_ask_for_password, and user set pg_password
 - Added the rest of the supported options for the database.yml
-- pull/46: Fix for pg_host when localhost is used
+- pull/46 (Thanks to Tom Prats / tomprats): Fix for pg_host when localhost is used
 - Removed system_user as it's not necessary if server values are defined properly in config/deploy/* files
 - Generate cleanup of notes
 
