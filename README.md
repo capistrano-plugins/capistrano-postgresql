@@ -50,9 +50,6 @@ Or just install
 [capistrano-safe-deploy-to](https://github.com/capistrano-plugins/capistrano-safe-deploy-to)
 plugin and don't think about it.
 
-Within your app/config/deploy/#{environment}.rb files, make sure to specify a user with ssh access to all deployment servers:
-
-    set :system_user, 'ssh_user' # defaults to root
     
 Optionally, you can run psql commands WITHOUT sudo if needed. Set the following:
 
