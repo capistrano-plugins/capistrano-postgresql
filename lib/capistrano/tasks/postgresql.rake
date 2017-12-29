@@ -22,9 +22,8 @@ namespace :load do
     set :pg_port, 5432
     set :pg_timeout, 5000 # 5 seconds (rails default)
     # General settings
-    set :system_user, 'root' # Used for SCP commands to deploy files to remote servers
-    set :pg_system_user, 'postgres'
     set :pg_without_sudo, false # issues/22 | Contributed by snake66
+    set :pg_system_user, 'postgres'
     set :pg_ask_for_password, false
     set :pg_system_db, 'postgres'
     set :pg_use_hstore, false
@@ -96,7 +95,7 @@ namespace :postgresql do
     next unless Array( fetch(:pg_extensions) ).any?
     on roles :db do
       Array( fetch(:pg_extensions) ).each do |ext|
-        next if [nil, false, ""].include?(ext)
+        next if [nil, false, ''].include?(ext)
         if psql_on_app_db '-c', %Q{"CREATE EXTENSION IF NOT EXISTS #{ext};"}
           puts "- Added extension #{ext} to #{fetch(:pg_database)}"
         else
@@ -135,11 +134,11 @@ namespace :postgresql do
   task :generate_database_yml_archetype do
     on primary :db do
       if test "[ -e #{archetype_database_yml_file} ]" # Archetype already exists. Just update values that changed. Make sure we don't overwrite it to protect generated passwords.
-        Net::SCP.upload!(fetch(:pg_host), fetch(:system_user), StringIO.new(pg_template(true, download!(archetype_database_yml_file))), archetype_database_yml_file)
+        Net::SCP.upload!(self.host.hostname, self.host.user,StringIO.new(pg_template(true, download!(archetype_database_yml_file))),archetype_database_yml_file)
       else
         ask_for_or_generate_password if fetch(:pg_password).nil? || fetch(:pg_ask_for_password) == true # Avoid setting a random password or one from user prompt
         execute :mkdir, '-pv', File.dirname(archetype_database_yml_file)
-        Net::SCP.upload!(fetch(:pg_host), fetch(:system_user), StringIO.new(pg_template), archetype_database_yml_file)
+        Net::SCP.upload!(self.host.hostname,self.host.user,StringIO.new(pg_template),archetype_database_yml_file)
       end
     end
   end
@@ -154,7 +153,7 @@ namespace :postgresql do
 
     on release_roles :all do
       execute :mkdir, '-pv', File.dirname(database_yml_file)
-      Net::SCP.upload!(self.host.hostname, fetch(:system_user), StringIO.new(database_yml_contents), database_yml_file)
+      Net::SCP.upload!(self.host.hostname, self.host.user, StringIO.new(database_yml_contents), database_yml_file)
     end
   end
 
