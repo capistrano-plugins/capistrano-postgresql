@@ -7,7 +7,7 @@
 - Added the rest of the supported options for the database.yml
 - pull/46 (Thanks to Tom Prats / tomprats): Fix for pg_host when localhost is used
 - Removed system_user as it's not necessary if server values are defined properly in config/deploy/* files
-- Generate cleanup of notes
+- General cleanup of notes
 
 ## v4.7.0, 2017-12-19
 - Fixed create database and user tasks to use (:pg_system_db) and psql_on_db
