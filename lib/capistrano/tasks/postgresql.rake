@@ -165,14 +165,18 @@ namespace :postgresql do
 
   desc 'Postgresql setup tasks'
   task :setup do
-    puts "* ============================= * \n All psql commands will be run #{fetch(:pg_without_sudo) ? 'without sudo' : 'with sudo'}\n You can modify this in your deploy/{env}.rb by setting the pg_without_sudo boolean \n* ============================= *"
-    invoke 'postgresql:remove_app_database_yml_files' # Deletes old yml files from all app role servers. Allows you to avoid having to manually delete the files on your app servers to get a new pool size for example. Don't touch the archetype file to avoid deleting generated passwords
-    invoke 'postgresql:create_db_user'
-    invoke 'postgresql:create_database'
-    invoke 'postgresql:add_hstore'
-    invoke 'postgresql:add_extensions'
-    invoke 'postgresql:generate_database_yml_archetype'
-    invoke 'postgresql:generate_database_yml'
+    puts "* ============================= * \n All psql commands will be run #{fetch(:pg_without_sudo) ? 'without sudo' : 'with sudo'}\n You can modify this in your deploy/#{fetch(:rails_env)}.rb by setting the pg_without_sudo boolean \n* ============================= *"
+    if primary(:db).nil?
+      puts "There is no server in your deploy/#{fetch(:rails_env)}.rb with a :db role... Skipping Postgresql setup."
+    else
+      invoke 'postgresql:remove_app_database_yml_files' # Deletes old yml files from all app role servers. Allows you to avoid having to manually delete the files on your app servers to get a new pool size for example. Don't touch the archetype file to avoid deleting generated passwords
+      invoke 'postgresql:create_db_user'
+      invoke 'postgresql:create_database'
+      invoke 'postgresql:add_hstore'
+      invoke 'postgresql:add_extensions'
+      invoke 'postgresql:generate_database_yml_archetype'
+      invoke 'postgresql:generate_database_yml'
+    end
   end
 end
 
