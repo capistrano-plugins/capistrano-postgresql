@@ -42,7 +42,9 @@ Then:
 If you're deploying a standard rails app, all you need to do is put
 the following in `Capfile` file:
 
-    require 'capistrano/postgresql'
+```
+require 'capistrano/postgresql' 
+```
 
 * Make sure the `deploy_to` path exists and has the right privileges on the
 server (i.e. `/var/www/myapp`). Warning: The ~ symbol (i.e. `~/myapp`) is not supported. Or just install
