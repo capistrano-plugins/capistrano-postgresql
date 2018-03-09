@@ -123,7 +123,7 @@ namespace :postgresql do
       next if db_user_exists?
       # If you use CREATE USER instead of CREATE ROLE the LOGIN right is granted automatically; otherwise you must specify it in the WITH clause of the CREATE statement.
       unless psql_on_db fetch(:pg_system_db), '-c', %Q{"CREATE USER \\"#{fetch(:pg_username)}\\" PASSWORD '#{fetch(:pg_password)}';"}
-        error 'postgresql: creating database user failed!'
+        error "postgresql: creating database user \"#{fetch(:pg_username)}\" failed!"
         exit 1
       end
     end
@@ -170,7 +170,7 @@ namespace :postgresql do
       puts "There are no servers in your app/config/deploy/#{fetch(:rails_env)}.rb with a :app role... Skipping Postgresql setup."
     else
       invoke 'postgresql:remove_app_database_yml_files' # Deletes old yml files from all servers. Allows you to avoid having to manually delete the files on your app servers to get a new pool size for example. Don't touch the archetype file to avoid deleting generated passwords.
-      if release_roles(:db).nil? # Test to be sure we have a :db role host
+      if release_roles(:db).empty? # Test to be sure we have a :db role host
         puts "There is no server in your app/config/deploy/#{fetch(:rails_env)}.rb with a :db role... Skipping Postgresql setup."
       else
         invoke 'postgresql:create_db_user'
