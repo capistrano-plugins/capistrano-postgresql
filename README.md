@@ -44,20 +44,15 @@ the following in `Capfile` file:
 
     require 'capistrano/postgresql'
 
-Make sure the `deploy_to` path exists and has the right privileges on the
-server (i.e. `/var/www/myapp`). Warning: The ~ symbol (i.e. `~/myapp`) is not supported.<br/>
-Or just install
+* Make sure the `deploy_to` path exists and has the right privileges on the
+server (i.e. `/var/www/myapp`). Warning: The ~ symbol (i.e. `~/myapp`) is not supported. Or just install
 [capistrano-safe-deploy-to](https://github.com/capistrano-plugins/capistrano-safe-deploy-to)
 plugin and don't think about it.
+* Within your app/config/deploy/{env}.rb files, you need to specify at least one :app and one :db server. 
+* It's also suggested to specify `:primary => true` on the end of your primary :db server line.
+* Optionally, you can run psql commands WITHOUT sudo if needed. Set the following: `set :pg_without_sudo, true # defaults to false`
 
-Within your app/config/deploy/{env}.rb files, you need to specify at least one :app and one :db server. 
-It's also suggested to specify `:primary => true` on the end of your primary :db server line.
-
-Optionally, you can run psql commands WITHOUT sudo if needed. Set the following:
-
-    set :pg_without_sudo, true # defaults to false
-
-To setup the server(s), run:
+Finally, to setup the server(s), run:
 
     $ bundle exec cap production setup
 
