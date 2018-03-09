@@ -52,7 +52,7 @@ server (i.e. `/var/www/myapp`). Warning: The ~ symbol (i.e. `~/myapp`) is not su
 plugin and don't think about it.
 * Within your app/config/deploy/{env}.rb files, you need to specify at least one :app and one :db server. 
 * It's also suggested to specify `:primary => true` on the end of your primary :db server line.
-* Optionally, you can run psql commands WITHOUT sudo if needed. Set the following: `set :pg_without_sudo, true # defaults to false`
+* Optionally, you can run psql commands WITHOUT sudo if needed. Set the following (which defaults to false): `set :pg_without_sudo, true`
 
 Finally, to setup the server(s), run:
 
