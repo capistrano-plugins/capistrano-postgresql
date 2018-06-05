@@ -25,7 +25,6 @@ namespace :load do
     # General settings
     set :pg_without_sudo, false # issues/22 | Contributed by snake66
     set :pg_system_user, 'postgres'
-    set :pg_ask_for_password, false
     set :pg_system_db, 'postgres'
     set :pg_use_hstore, false
     set :pg_extensions, []
