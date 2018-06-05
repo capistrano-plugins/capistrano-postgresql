@@ -1,7 +1,6 @@
 require 'capistrano/postgresql/helper_methods'
 require 'capistrano/postgresql/password_helpers'
 require 'capistrano/postgresql/psql_helpers'
-
 include Capistrano::Postgresql::HelperMethods
 include Capistrano::Postgresql::PasswordHelpers
 include Capistrano::Postgresql::PsqlHelpers
@@ -136,7 +135,6 @@ namespace :postgresql do
       if test "[ -e #{archetype_database_yml_file} ]" # Archetype already exists. Just update values that changed. Make sure we don't overwrite it to protect generated passwords.
         Net::SCP.upload!(self.host.hostname, self.host.user,StringIO.new(pg_template(true, download!(archetype_database_yml_file))),archetype_database_yml_file)
       else
-        ask_for_or_generate_password if fetch(:pg_password).nil? || fetch(:pg_ask_for_password) == true # Avoid setting a random password or one from user prompt
         execute :mkdir, '-pv', File.dirname(archetype_database_yml_file)
         Net::SCP.upload!(self.host.hostname,self.host.user,StringIO.new(pg_template),archetype_database_yml_file)
       end
