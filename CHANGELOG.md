@@ -2,6 +2,9 @@
 
 ### master
 
+## v4.9.1, 2018-06-04
+- Added back set :pg_ask_for_password, false and ask_for_or_generate_password
+
 ## v4.8.0, 2017-12-28
 - issues/47: Added new pg_template helper code to handle maintaining the randomly generated password, :pg_ask_for_password, and user set pg_password
 - Added the rest of the supported options for the database.yml

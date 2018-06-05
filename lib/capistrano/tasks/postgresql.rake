@@ -14,7 +14,8 @@ namespace :load do
     set :pg_database, -> { "#{fetch(:application)}_#{fetch(:stage)}" }
     set :pg_pool, 5
     set :pg_username, -> { fetch(:pg_database) }
-    set :pg_password, nil
+    set :pg_ask_for_password, false
+    set :pg_password, -> { ask_for_or_generate_password }
     set :pg_socket, ''
     set :pg_host, -> do # for multiple release nodes automatically use server hostname (IP?) in the database.yml
       release_roles(:all).count == 1 && release_roles(:all).first == primary(:db) ? 'localhost' : primary(:db).hostname
