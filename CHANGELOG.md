@@ -2,6 +2,9 @@
 
 ### master
 
+## v5.0.1, 2018-06-05
+- Quick fix for fetch(:pg_database) on extension adding
+
 ## v5.0.0, 2018-06-05
 - Code cleanup
 - Removal of legacy add hstore method

@@ -76,7 +76,7 @@ namespace :postgresql do
       if Array( fetch(:pg_extensions) ).any?
         Array( fetch(:pg_extensions) ).each do |ext|
           next if [nil, false, ''].include?(ext)
-          psql 'execute', fetch(:pg_system_db), '-c', %Q{"CREATE EXTENSION IF NOT EXISTS #{ext};"}unless extension_exists?(ext)
+          psql 'execute', fetch(:pg_database), '-c', %Q{"CREATE EXTENSION IF NOT EXISTS #{ext};"}unless extension_exists?(ext)
         end
       end
     end
