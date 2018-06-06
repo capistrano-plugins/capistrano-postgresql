@@ -13,8 +13,9 @@ namespace :load do
     set :pg_database, -> { "#{fetch(:application)}_#{fetch(:stage)}" }
     set :pg_pool, 5
     set :pg_username, -> { fetch(:pg_database) }
-    set :pg_ask_for_password, false
-    set :pg_password, -> { ask_for_or_generate_password }
+    set :pg_generate_random_password, nil
+    set :pg_ask_for_password, nil
+    set :pg_password, -> { pg_password_generate }
     set :pg_socket, ''
     set :pg_host, -> do # for multiple release nodes automatically use server hostname (IP?) in the database.yml
       release_roles(:all).count == 1 && release_roles(:all).first == primary(:db) ? 'localhost' : primary(:db).hostname
@@ -44,63 +45,49 @@ namespace :postgresql do
   # undocumented, for a reason: drops database. Use with care!
   task :remove_all do
     on release_roles :all do
-      if test "[ -e #{database_yml_file} ]"
-        execute :rm, database_yml_file
-      end
+      execute :rm, database_yml_file if test "[ -e #{database_yml_file} ]"
     end
-
     on primary :db do
-      if test "[ -e #{archetype_database_yml_file} ]"
-        execute :rm, archetype_database_yml_file
-      end
+      execute :rm, archetype_database_yml_file if test "[ -e #{archetype_database_yml_file} ]"
     end
-
     on roles :db do
-      psql '-c', %Q{"DROP database \\"#{fetch(:pg_database)}\\";"}
-      psql '-c', %Q{"DROP user \\"#{fetch(:pg_username)}\\";"}
+      psql'execute', fetch(:pg_system_db), '-c', %Q{"DROP database \\"#{fetch(:pg_database)}\\";"} if database_exists?
+      psql 'execute', fetch(:pg_system_db),'-c', %Q{"DROP user \\"#{fetch(:pg_username)}\\";"}if database_user_exists?
+      remove_extensions
     end
+    puts 'Removed database.yml from all hosts, Database, Database User, and Removed Extensions'
   end
 
   task :remove_app_database_yml_files do
     # We should never delete archetype files. The generate_database_yml_archetype task will handle updates
     on release_roles :app do
-      if test "[ -e #{database_yml_file} ]"
-        execute :rm, database_yml_file
-      end
+        execute :rm, database_yml_file if test "[ -e #{database_yml_file} ]"
     end
   end
 
   desc 'Remove pg_extension from postgresql db'
   task :remove_extensions do
-    next unless Array( fetch(:pg_extensions) ).any?
-    on roles :db do
-      # remove in reverse order if extension is present
-      Array( fetch(:pg_extensions) ).reverse.each do |ext|
-        psql_on_app_db '-c', %Q{"DROP EXTENSION IF EXISTS #{ext};"} unless [nil, false, ""].include?(ext)
-      end
-    end
-  end
-
-  desc 'Add the hstore extension to postgresql'
-  task :add_hstore do
-    next unless fetch(:pg_use_hstore)
-    on roles :db do
-      psql_on_app_db '-c', %Q{"CREATE EXTENSION IF NOT EXISTS hstore;"}
-    end
+    remove_extensions
   end
 
   desc 'Add pg_extension to postgresql db'
   task :add_extensions do
-    next unless Array( fetch(:pg_extensions) ).any?
     on roles :db do
-      Array( fetch(:pg_extensions) ).each do |ext|
-        next if [nil, false, ''].include?(ext)
-        if psql_on_app_db '-c', %Q{"CREATE EXTENSION IF NOT EXISTS #{ext};"}
-          puts "- Added extension #{ext} to #{fetch(:pg_database)}"
-        else
-          error "postgresql: adding extension #{ext} failed!"
-          exit 1
+      if Array( fetch(:pg_extensions) ).any?
+        Array( fetch(:pg_extensions) ).each do |ext|
+          next if [nil, false, ''].include?(ext)
+          psql 'execute', fetch(:pg_system_db), '-c', %Q{"CREATE EXTENSION IF NOT EXISTS #{ext};"}unless extension_exists?(ext)
         end
+      end
+    end
+  end
+
+  desc 'Create pg_username in database'
+  task :create_database_user do
+    on roles :db do
+      unless database_user_exists?
+        # If you use CREATE USER instead of CREATE ROLE the LOGIN right is granted automatically; otherwise you must specify it in the WITH clause of the CREATE statement.
+        psql 'execute', fetch(:pg_system_db), '-c', %Q{"CREATE USER \\"#{fetch(:pg_username)}\\" PASSWORD '#{fetch(:pg_password)}';"}
       end
     end
   end
@@ -108,22 +95,8 @@ namespace :postgresql do
   desc 'Create database'
   task :create_database do
     on roles :db do
-      next if database_exists?
-      unless psql_on_db fetch(:pg_system_db), '-c', %Q{"CREATE DATABASE \\"#{fetch(:pg_database)}\\" OWNER \\"#{fetch(:pg_username)}\\";"}
-        error 'postgresql: creating database failed!'
-        exit 1
-      end
-    end
-  end
-
-  desc 'Create DB user'
-  task :create_db_user do
-    on roles :db do
-      next if db_user_exists?
-      # If you use CREATE USER instead of CREATE ROLE the LOGIN right is granted automatically; otherwise you must specify it in the WITH clause of the CREATE statement.
-      unless psql_on_db fetch(:pg_system_db), '-c', %Q{"CREATE USER \\"#{fetch(:pg_username)}\\" PASSWORD '#{fetch(:pg_password)}';"}
-        error "postgresql: creating database user \"#{fetch(:pg_username)}\" failed!"
-        exit 1
+      unless database_exists?
+        psql 'execute', fetch(:pg_system_db), '-c', %Q{"CREATE DATABASE \\"#{fetch(:pg_database)}\\" OWNER \\"#{fetch(:pg_username)}\\";"}
       end
     end
   end
@@ -148,7 +121,6 @@ namespace :postgresql do
     on primary :db do
       database_yml_contents = download! archetype_database_yml_file
     end
-
     on release_roles :all do
       execute :mkdir, '-pv', File.dirname(database_yml_file)
       Net::SCP.upload!(self.host.hostname, self.host.user, StringIO.new(database_yml_contents), database_yml_file)
@@ -163,26 +135,31 @@ namespace :postgresql do
 
   desc 'Postgresql setup tasks'
   task :setup do
-    puts "* ============================= * \n All psql commands will be run #{fetch(:pg_without_sudo) ? 'without sudo' : 'with sudo'}\n You can modify this in your app/config/deploy/#{fetch(:rails_env)}.rb by setting the pg_without_sudo boolean \n* ============================= *"
+    puts "* ===== Postgresql Setup ===== *\n"
+    puts " All psql commands will be run #{fetch(:pg_without_sudo) ? 'without sudo' : 'with sudo'}\n You can modify this in your app/config/deploy/#{fetch(:rails_env)}.rb by setting the pg_without_sudo boolean.\n"
     if release_roles(:app).empty?
-      puts "There are no servers in your app/config/deploy/#{fetch(:rails_env)}.rb with a :app role... Skipping Postgresql setup."
+      warn " WARNING: There are no servers in your app/config/deploy/#{fetch(:rails_env)}.rb with a :app role... Skipping Postgresql setup."
     else
       invoke 'postgresql:remove_app_database_yml_files' # Deletes old yml files from all servers. Allows you to avoid having to manually delete the files on your app servers to get a new pool size for example. Don't touch the archetype file to avoid deleting generated passwords.
       if release_roles(:db).empty? # Test to be sure we have a :db role host
-        puts "There is no server in your app/config/deploy/#{fetch(:rails_env)}.rb with a :db role... Skipping Postgresql setup."
+        warn " WARNING: There is no server in your app/config/deploy/#{fetch(:rails_env)}.rb with a :db role... Skipping Postgresql setup."
+      elsif !fetch(:pg_password) && !fetch(:pg_generate_random_password) && !fetch(:pg_ask_for_password)
+        warn " WARNING: There is no :pg_password set in your app/config/deploy/#{fetch(:rails_env)}.rb.\n  If you don't wish to set it, 'set :pg_generate_random_password, true' or 'set :pg_ask_for_password, true' are available!"
+      elsif fetch(:pg_generate_random_password) && fetch(:pg_ask_for_password)
+        warn " WARNING: You cannot have both :pg_generate_random_password and :pg_ask_for_password enabled in app/config/deploy/#{fetch(:rails_env)}.rb."
       else
-        invoke 'postgresql:create_db_user'
+        invoke 'postgresql:create_database_user'
         invoke 'postgresql:create_database'
-        invoke 'postgresql:add_hstore'
         invoke 'postgresql:add_extensions'
         invoke 'postgresql:generate_database_yml_archetype'
         invoke 'postgresql:generate_database_yml'
       end
     end
+    puts "* ============================= *"
   end
 end
 
 desc 'Server setup tasks'
 task :setup do
-  invoke "postgresql:setup"
+  invoke 'postgresql:setup'
 end

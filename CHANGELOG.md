@@ -2,6 +2,15 @@
 
 ### master
 
+## v5.0.0, 2018-06-05
+- Code cleanup
+- Removal of legacy add hstore method
+- Using execute and test properly so we can see what the gem is doing in the STDOUT
+- Expanded remove_all task to actually cover everything
+- Added deploy config option pg_generate_random_password, instead of using it by default when pg_password is excluded
+- issues/53: Bug fixed for updates to the archetype when using random password
+- projects/1: Prep for RSPEC testing project
+
 ## v4.9.1, 2018-06-04
 - Added back set :pg_ask_for_password, false and ask_for_or_generate_password
 

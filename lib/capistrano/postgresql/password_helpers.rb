@@ -8,15 +8,15 @@ module Capistrano
         SecureRandom.hex(10)
       end
 
-      # This method is invoked only if :pg_password is not already set in config/#{:stage}/deploy.rb. Directly setting :pg_password has precedence.
-      def ask_for_or_generate_password
+      def pg_password_generate
         if fetch(:pg_ask_for_password)
           ask :pg_password, "Postgresql database password for the app: "
-        else
+        elsif fetch(:pg_generate_random_password)
           set :pg_password, generate_random_password
+        else
+          set :pg_password, nil # Necessary for pg_template
         end
       end
-
     end
   end
 end

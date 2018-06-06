@@ -4,6 +4,22 @@ module Capistrano
   module Postgresql
     module HelperMethods
 
+      def extension_exists?(extension)
+        psql 'test', fetch(:pg_system_db), '-tAc', %Q{"SELECT 1 FROM pg_extension WHERE extname='#{extension}';" | grep -q 1}
+      end
+
+      def remove_extensions
+        if Array( fetch(:pg_extensions) ).any?
+          on roles :db do
+            # remove in reverse order if extension is present
+            Array( fetch(:pg_extensions) ).reverse.each do |ext|
+              next if [nil, false, ""].include?(ext)
+              psql 'execute', fetch(:pg_system_db), '-c', %Q{"DROP EXTENSION IF EXISTS #{ext};"} if extension_exists?(ext)
+            end
+          end
+        end
+      end
+
       def generate_database_yml_io(password=fetch(:pg_password))
         StringIO.open do |s|
           s.puts "#{fetch(:pg_env)}:"
@@ -26,10 +42,10 @@ module Capistrano
       def pg_template(update=false,archetype_file=nil)
         config_file = "#{fetch(:pg_templates_path)}/postgresql.yml.erb"
         if update
-          raise('Updates need the original file to update from.') if archetype_file.nil?
+          raise('Regeneration of archetype database.yml need the original file to update from.') if archetype_file.nil?
           raise('Cannot update a custom postgresql.yml.erb file.') if File.exists?(config_file) # Skip custom postgresql.yml.erb if we're updating. It's not supported
           # Update yml file from settings
-          if fetch(:pg_password).nil? && fetch(:pg_ask_for_password) == false # User isn't generating a random password or wanting to set it manually from prompt
+          if fetch(:pg_generate_random_password) || !fetch(:pg_password) # We need to prevent updating the archetype file if we've done a random or "ask"ed password
             current_password = archetype_file.split("\n").grep(/password/)[0].split('password:')[1].strip
             generate_database_yml_io(current_password)
           else
