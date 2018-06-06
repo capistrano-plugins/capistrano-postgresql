@@ -36,7 +36,7 @@ Then:
 
 ### Usage
 
-In a standard RAILS app, you need to do is put the following in `Capfile` file:
+In a standard RAILS app, you need to put the following in `Capfile` file:
 
 ```
 require 'capistrano/postgresql' 
