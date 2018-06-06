@@ -1,10 +1,9 @@
 # Capistrano::PostgreSQL
 
-**Note: this plugin works only with Capistrano 3.** Plase check the capistrano
+**Note: this plugin works only with Capistrano 3.** Please check the capistrano
 gem version you're using before installing this gem:
 `$ bundle show | grep capistrano`
-
-Plugin for Capistrano 2 [is here](https://github.com/bruno-/capistrano2-postgresql).
+The plugin for Capistrano 2 [is here](https://github.com/bruno-/capistrano2-postgresql).
 
 ### About
 
@@ -14,11 +13,9 @@ tasks for PostgreSQL when deploying rails apps.
 Here are the specific things this plugin does for your capistrano deployment
 process:
 
-* creates a new PostgreSQL database and database user on the server
-* generates and populates `database.yml` file on all release nodes
-  (no need to ssh to the server and do this manually!)
-* zero-config
-* support for multi-server setup: separate `db` and `app` nodes (from version 4.0)
+* Creates a new PostgreSQL database and database user on the server
+* Generates and populates `database.yml` file on all release nodes (using ssh)
+* Support for multi-server setup: separate `db` and `app` nodes ( versions > 4.0 )
 
 **Note**: gem version 4 introduces some breaking changes. If you installed gem
 version 3 or below you might want to follow the
@@ -30,7 +27,7 @@ Put the following in your application's `Gemfile`:
 
     group :development do
       gem 'capistrano', '~> 3.2.0'
-      gem 'capistrano-postgresql', '~> 4.8.0'
+      gem 'capistrano-postgresql', '~> 5.0.0'
     end
 
 Then:
@@ -39,31 +36,55 @@ Then:
 
 ### Usage
 
-If you're deploying a standard rails app, all you need to do is put
-the following in `Capfile` file:
+In a standard RAILS app, you need to do is put the following in `Capfile` file:
 
 ```
 require 'capistrano/postgresql' 
 ```
 
-* Make sure the `deploy_to` path exists and has the right privileges on the
-server (i.e. `/var/www/myapp`). Warning: The ~ symbol (i.e. `~/myapp`) is not supported.
-* Within your app/config/deploy/{env}.rb files, you need to specify at least one :app and one :db server. 
-* It's also suggested to specify `:primary => true` on the end of your primary :db server line.
-* Optionally, you can run psql commands WITHOUT sudo if needed. Set the following (which defaults to false): `set :pg_without_sudo, true`
+You need to include ONLY ONE of the following in your config/deploy/*.rb files:
+
+```
+set :pg_password, ENV['DATABASE_USER_PASSWORD']
+set :pg_ask_for_password, true
+set :pg_generate_random_password, true
+```
+
+Example config:
+
+```
+server 'growtrader.dev', user: 'growtrader', roles: %w{app db}
+set :stage, :development
+set :branch, 'development'
+# ==================
+# Postgresql setup
+set :pg_without_sudo, false
+set :pg_host, 'growtrader.dev'
+set :pg_database, 'growtrader'
+set :pg_username, 'growtrader'
+#set :pg_generate_random_password, true
+#set :pg_ask_for_password, true
+set :pg_password, ENV['GROWTRADER_PGPASS']
+set :pg_extensions, ['citext','hstore']
+set :pg_encoding, 'UTF-8'
+set :pg_pool, '100'
+```
 
 Finally, to setup the server(s), run:
 
     $ bundle exec cap production setup
 
-### Gotchas
+### Requirements
 
-Be sure to remove `config/database.yml` from your application's version control.
+* Be sure to remove `config/database.yml` from your application's version control.
+* Your pg_hba.conf must include `local all all trust`
+* Make sure the `deploy_to` path exists and has the right privileges on your servers. The ~ symbol (i.e. `~/myapp`) is not supported.
+* Within your app/config/deploy/{env}.rb files, you need to specify at least one :app and one :db server. 
+* If you have multiple :db role hosts, it's necessary to specify `:primary => true` on the end of your primary :db server.
 
 ### How it works
 
 [How the plugin works](https://github.com/capistrano-plugins/capistrano-postgresql/wiki/How-it-works)
-wiki page contains a list of actions the plugin executes.
 
 Read it only if you want to learn more about the plugin internals.
 
@@ -87,7 +108,7 @@ Check out [capistrano-plugins](https://github.com/capistrano-plugins) github org
 
 Contributions and improvements are very welcome.
 
-If something is not working for you, or you find a bug please report it.
+If something is not working for you, or you find a bug, please report it.
 
 ### Thanks
 
