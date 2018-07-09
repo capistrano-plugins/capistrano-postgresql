@@ -27,7 +27,7 @@ Put the following in your application's `Gemfile`:
 
     group :development do
       gem 'capistrano', '~> 3.2.0'
-      gem 'capistrano-postgresql', '~> 5.0.0'
+      gem 'capistrano-postgresql', '~> 6.0.0'
     end
 
 Then:
@@ -45,26 +45,28 @@ require 'capistrano/postgresql'
 You need to include ONLY ONE of the following in your config/deploy/*.rb files:
 
 ```
-set :pg_password, ENV['DATABASE_USER_PASSWORD']
-set :pg_ask_for_password, true
-set :pg_generate_random_password, true
+set :pg_password, ENV['DATABASE_USER_PASSWORD'] # Example is an ENV value, but you can use a string instead
+set :pg_ask_for_password, true # Prompts user for password on execution of setup
+set :pg_generate_random_password, true # Generates a random password on each setup
 ```
+
+##### Execution of `cap ENV setup` will run ALTER USER on pg_username if there is a different password. If you're using :pg_generate_random_password, you'll get a new random password on each run.
 
 Example config:
 
 ```
-server 'growtrader.dev', user: 'growtrader', roles: %w{app db}
+server 'yoursite.net', user: 'growtrader', roles: %w{app db}
 set :stage, :development
 set :branch, 'development'
 # ==================
 # Postgresql setup
 set :pg_without_sudo, false
-set :pg_host, 'growtrader.dev'
-set :pg_database, 'growtrader'
-set :pg_username, 'growtrader'
+set :pg_host, 'db.yoursite.net'
+set :pg_database, 'pg_database_name_here'
+set :pg_username, 'pg_username_here'
 #set :pg_generate_random_password, true
 #set :pg_ask_for_password, true
-set :pg_password, ENV['GROWTRADER_PGPASS']
+set :pg_password, ENV['yoursite_PGPASS']
 set :pg_extensions, ['citext','hstore']
 set :pg_encoding, 'UTF-8'
 set :pg_pool, '100'
@@ -72,15 +74,15 @@ set :pg_pool, '100'
 
 Finally, to setup the server(s), run:
 
-    $ bundle exec cap production setup
+    $ bundle exec cap development setup
 
 ### Requirements
-
 * Be sure to remove `config/database.yml` from your application's version control.
-* Your pg_hba.conf must include `local all all trust`
+* Your pg_hba.conf must include `local all all trust`. We ssh into the servers to execute psql commands.
 * Make sure the `deploy_to` path exists and has the right privileges on your servers. The ~ symbol (i.e. `~/myapp`) is not supported.
-* Within your app/config/deploy/{env}.rb files, you need to specify at least one :app and one :db server. 
+* Within your app/config/deploy/{env}.rb files, you need to specify at least one :app and one :db server (they can be on the same host; `roles: %w{web app db}`)
 * If you have multiple :db role hosts, it's necessary to specify `:primary => true` on the end of your primary :db server.
+* gem >= 6.0.0 requires SSHKIT >= 1.17.0 as passwords are redacted from logging.
 
 ### How it works
 

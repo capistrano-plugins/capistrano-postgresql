@@ -20,7 +20,7 @@ module Capistrano
         end
       end
 
-      def generate_database_yml_io(password=fetch(:pg_password))
+      def generate_database_yml_io
         StringIO.open do |s|
           s.puts "#{fetch(:pg_env)}:"
           {
@@ -29,7 +29,7 @@ module Capistrano
               database: fetch(:pg_database),
               pool: fetch(:pg_pool),
               username: fetch(:pg_username),
-              password: password,
+              password: fetch(:pg_password),
               host: fetch(:pg_host),
               socket: fetch(:pg_socket),
               port: fetch(:pg_port),
@@ -45,12 +45,7 @@ module Capistrano
           raise('Regeneration of archetype database.yml need the original file to update from.') if archetype_file.nil?
           raise('Cannot update a custom postgresql.yml.erb file.') if File.exists?(config_file) # Skip custom postgresql.yml.erb if we're updating. It's not supported
           # Update yml file from settings
-          if fetch(:pg_generate_random_password) || !fetch(:pg_password) # We need to prevent updating the archetype file if we've done a random or "ask"ed password
-            current_password = archetype_file.split("\n").grep(/password/)[0].split('password:')[1].strip
-            generate_database_yml_io(current_password)
-          else
-            generate_database_yml_io
-          end
+          generate_database_yml_io
         else
           if File.exists?(config_file) # If there is a customized file in your rails app template directory, use it and convert any ERB
             StringIO.new ERB.new(File.read(config_file)).result(binding)

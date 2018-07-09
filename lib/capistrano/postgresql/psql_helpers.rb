@@ -3,21 +3,30 @@ module Capistrano
     module PsqlHelpers
 
       def psql(type, database, *args)
-        cmd = [ :psql, "-d #{database}", *args ]
         if fetch(:pg_without_sudo)
-          args.unshift("-U #{fetch(:pg_system_user)}") # Add the :pg_system_user to psql command since we aren't using sudo anymore
+          # Add the :pg_system_user to psql command since we aren't using sudo anymore
+          cmd = [ :psql, "-d #{database}", *args.unshift("-U #{fetch(:pg_system_user)}") ]
         else
           cmd = [:sudo, "-i -u #{fetch(:pg_system_user)}", *cmd]
         end
+        # Allow us to execute the different sshkit commands
         if type == 'test'
-          test *cmd.flatten
+          test *cmd
+        elsif type == 'capture'
+          capture *cmd
         else
-          execute *cmd.flatten
+          execute *cmd
         end
       end
 
       def database_user_exists?
         psql 'test', fetch(:pg_system_db),'-tAc', %Q{"SELECT 1 FROM pg_roles WHERE rolname='#{fetch(:pg_username)}';" | grep -q 1}
+      end
+
+      def database_user_password_different?
+        current_password_md5 = psql 'capture', fetch(:pg_system_db),'-tAc', %Q{"select passwd from pg_shadow WHERE usename='#{fetch(:pg_username)}';"}
+        new_password_md5 = "md5#{Digest::MD5.hexdigest("#{fetch(:pg_password)}#{fetch(:pg_username)}")}"
+        current_password_md5 == new_password_md5 ? false : true
       end
 
       def database_exists?

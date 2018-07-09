@@ -2,6 +2,12 @@
 
 ### master
 
+## v6.0.0, 2018-07-09
+- Fix for pg_without_sudo; Wasn't adding -U to args
+- New feature that will ALTER USER/Password with any change to pg_password. Random passwords will cause each cap setup to run the ALTER USER, but that's fine as a user should technically only be using setup initially. It's not that hard to obtain the new password if this happens.
+- New redaction for logging of passwords & SSHKIT 1.17.0 in gemspec
+- README updates
+
 ## v5.0.1, 2018-06-05
 - Quick fix for fetch(:pg_database) on extension adding
 

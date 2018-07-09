@@ -82,12 +82,16 @@ namespace :postgresql do
     end
   end
 
-  desc 'Create pg_username in database'
+  desc 'Create or update pg_username in database'
   task :create_database_user do
     on roles :db do
       unless database_user_exists?
         # If you use CREATE USER instead of CREATE ROLE the LOGIN right is granted automatically; otherwise you must specify it in the WITH clause of the CREATE statement.
-        psql 'execute', fetch(:pg_system_db), '-c', %Q{"CREATE USER \\"#{fetch(:pg_username)}\\" PASSWORD '#{fetch(:pg_password)}';"}
+        psql 'execute', fetch(:pg_system_db), '-c', %Q{"CREATE USER \\"#{fetch(:pg_username)}\\" PASSWORD}, redact("'#{fetch(:pg_password)}'"), %Q{;"}
+      end
+      if database_user_password_different?
+        # Ensure updating the password in your deploy/ENV.rb files updates the user, server side
+        psql 'execute', fetch(:pg_system_db), '-c', %Q{"ALTER USER \\"#{fetch(:pg_username)}\\" WITH PASSWORD}, redact("'#{fetch(:pg_password)}'"), %Q{;"}
       end
     end
   end
@@ -140,7 +144,6 @@ namespace :postgresql do
     if release_roles(:app).empty?
       warn " WARNING: There are no servers in your app/config/deploy/#{fetch(:rails_env)}.rb with a :app role... Skipping Postgresql setup."
     else
-      invoke 'postgresql:remove_app_database_yml_files' # Deletes old yml files from all servers. Allows you to avoid having to manually delete the files on your app servers to get a new pool size for example. Don't touch the archetype file to avoid deleting generated passwords.
       if release_roles(:db).empty? # Test to be sure we have a :db role host
         warn " WARNING: There is no server in your app/config/deploy/#{fetch(:rails_env)}.rb with a :db role... Skipping Postgresql setup."
       elsif !fetch(:pg_password) && !fetch(:pg_generate_random_password) && !fetch(:pg_ask_for_password)
@@ -148,6 +151,7 @@ namespace :postgresql do
       elsif fetch(:pg_generate_random_password) && fetch(:pg_ask_for_password)
         warn " WARNING: You cannot have both :pg_generate_random_password and :pg_ask_for_password enabled in app/config/deploy/#{fetch(:rails_env)}.rb."
       else
+        invoke 'postgresql:remove_app_database_yml_files' # Deletes old yml files from all servers. Allows you to avoid having to manually delete the files on your app servers to get a new pool size for example. Don't touch the archetype file to avoid deleting generated passwords.
         invoke 'postgresql:create_database_user'
         invoke 'postgresql:create_database'
         invoke 'postgresql:add_extensions'

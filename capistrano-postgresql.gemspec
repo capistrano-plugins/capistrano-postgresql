@@ -24,5 +24,6 @@ Gem::Specification.new do |gem|
   gem.require_paths = ['lib']
 
   gem.add_dependency 'capistrano', '>= 3.0'
+  gem.add_dependency 'sshkit', '>= 1.17.0' # 1.17.0 required for log/password redaction
   gem.add_development_dependency 'rake'
 end
