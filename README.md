@@ -55,7 +55,7 @@ set :pg_generate_random_password, true # Generates a random password on each set
 Example config:
 
 ```
-server 'yoursite.net', user: 'growtrader', roles: %w{app db}
+server 'yoursite.net', user: 'ssh_username_here', roles: %w{app db}
 set :stage, :development
 set :branch, 'development'
 # ==================
