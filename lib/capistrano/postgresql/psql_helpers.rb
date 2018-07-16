@@ -7,7 +7,7 @@ module Capistrano
           # Add the :pg_system_user to psql command since we aren't using sudo anymore
           cmd = [ :psql, "-d #{database}", *args.unshift("-U #{fetch(:pg_system_user)}") ]
         else
-          cmd = [:sudo, "-i -u #{fetch(:pg_system_user)}", *cmd]
+          cmd = [:sudo, "-i -u #{fetch(:pg_system_user)}", :psql, *args]
         end
         # Allow us to execute the different sshkit commands
         if type == 'test'
