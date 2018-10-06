@@ -110,22 +110,30 @@ namespace :postgresql do
   task :generate_database_yml_archetype do
     on primary :db do
       if test "[ -e #{archetype_database_yml_file} ]" # Archetype already exists. Just update values that changed. Make sure we don't overwrite it to protect generated passwords.
-        Net::SCP.upload!(
-            self.host.hostname,
-            self.host.user,
+        upload!(
             StringIO.new(pg_template(true, download!(archetype_database_yml_file))),
-            archetype_database_yml_file,
-            ssh: { port: self.host.port }
+            archetype_database_yml_file
         )
+        # Net::SCP.upload!(
+        #     self.host.hostname,
+        #     self.host.user,
+        #     StringIO.new(pg_template(true, download!(archetype_database_yml_file))),
+        #     archetype_database_yml_file,
+        #     ssh: { port: self.host.port }
+        # )
       else
         execute :mkdir, '-pv', File.dirname(archetype_database_yml_file)
-        Net::SCP.upload!(
-            self.host.hostname,
-            self.host.user,
+        upload!(
             StringIO.new(pg_template),
-            archetype_database_yml_file,
-            ssh: { port: self.host.port }
+            archetype_database_yml_file
         )
+        # Net::SCP.upload!(
+        #     self.host.hostname,
+        #     self.host.user,
+        #     StringIO.new(pg_template),
+        #     archetype_database_yml_file,
+        #     ssh: { port: self.host.port }
+        # )
       end
     end
   end
@@ -139,13 +147,17 @@ namespace :postgresql do
     end
     on release_roles :all do
       execute :mkdir, '-pv', File.dirname(database_yml_file)
-      Net::SCP.upload!(
-          self.host.hostname,
-          self.host.user,
+      upload!(
           StringIO.new(database_yml_contents),
-          database_yml_file,
-          ssh: { port: self.host.port }
+          database_yml_file
       )
+      # Net::SCP.upload!(
+      #     self.host.hostname,
+      #     self.host.user,
+      #     StringIO.new(database_yml_contents),
+      #     database_yml_file,
+      #     ssh: { port: self.host.port }
+      # )
     end
   end
 
