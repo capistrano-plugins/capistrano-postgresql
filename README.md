@@ -26,8 +26,8 @@ version 3 or below you might want to follow the
 Put the following in your application's `Gemfile`:
 
     group :development do
-      gem 'capistrano', '~> 3.2.0'
-      gem 'capistrano-postgresql', '~> 6.0.0'
+      gem 'capistrano', '~> 3.11'
+      gem 'capistrano-postgresql', '~> 6.2'
     end
 
 Then:
