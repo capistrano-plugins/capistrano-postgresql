@@ -5,7 +5,7 @@ module Capistrano
     module HelperMethods
 
       def extension_exists?(extension)
-        psql 'test', fetch(:pg_database), '-tAc', %Q{"SELECT 1 FROM pg_extension WHERE extname='#{extension}';" | grep -q 1}
+        psql 'test', fetch(:pg_database), "-p #{fetch(:pg_port)} -tAc", %Q{"SELECT 1 FROM pg_extension WHERE extname='#{extension}';" | grep -q 1}
       end
 
       def remove_extensions
@@ -14,7 +14,7 @@ module Capistrano
             # remove in reverse order if extension is present
             Array( fetch(:pg_extensions) ).reverse.each do |ext|
               next if [nil, false, ""].include?(ext)
-              psql 'execute', fetch(:pg_database), '-c', %Q{"DROP EXTENSION IF EXISTS #{ext};"} if extension_exists?(ext)
+              psql 'execute', fetch(:pg_database), "-p #{fetch(:pg_port)} -c", %Q{"DROP EXTENSION IF EXISTS #{ext};"} if extension_exists?(ext)
             end
           end
         end

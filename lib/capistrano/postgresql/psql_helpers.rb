@@ -20,17 +20,17 @@ module Capistrano
       end
 
       def database_user_exists?
-        psql 'test', fetch(:pg_system_db),'-tAc', %Q{"SELECT 1 FROM pg_roles WHERE rolname='#{fetch(:pg_username)}';" | grep -q 1}
+        psql 'test', fetch(:pg_system_db),"-p #{fetch(:pg_port)} -tAc", %Q{"SELECT 1 FROM pg_roles WHERE rolname='#{fetch(:pg_username)}';" | grep -q 1}
       end
 
       def database_user_password_different?
-        current_password_md5 = psql 'capture', fetch(:pg_system_db),'-tAc', %Q{"select passwd from pg_shadow WHERE usename='#{fetch(:pg_username)}';"}
+        current_password_md5 = psql 'capture', fetch(:pg_system_db),"-p #{fetch(:pg_port)} -tAc", %Q{"select passwd from pg_shadow WHERE usename='#{fetch(:pg_username)}';"}
         new_password_md5 = "md5#{Digest::MD5.hexdigest("#{fetch(:pg_password)}#{fetch(:pg_username)}")}"
         current_password_md5 == new_password_md5 ? false : true
       end
 
       def database_exists?
-        psql 'test', fetch(:pg_system_db), '-tAc', %Q{"SELECT 1 FROM pg_database WHERE datname='#{fetch(:pg_database)}';" | grep -q 1}
+        psql 'test', fetch(:pg_system_db), "-p #{fetch(:pg_port)} -tAc", %Q{"SELECT 1 FROM pg_database WHERE datname='#{fetch(:pg_database)}';" | grep -q 1}
       end
 
     end
