@@ -51,8 +51,8 @@ namespace :postgresql do
       execute :rm, archetype_database_yml_file if test "[ -e #{archetype_database_yml_file} ]"
     end
     on roles :db do
-      psql'execute', fetch(:pg_system_db), '-c', %Q{"DROP database \\"#{fetch(:pg_database)}\\";"} if database_exists?
-      psql 'execute', fetch(:pg_system_db),'-c', %Q{"DROP user \\"#{fetch(:pg_username)}\\";"}if database_user_exists?
+      psql'execute', fetch(:pg_system_db), "-p #{fetch(:pg_port)} -c", %Q{"DROP database \\"#{fetch(:pg_database)}\\";"} if database_exists?
+      psql 'execute', fetch(:pg_system_db),"-p #{fetch(:pg_port)} -c", %Q{"DROP user \\"#{fetch(:pg_username)}\\";"}if database_user_exists?
       remove_extensions
     end
     puts 'Removed database.yml from all hosts, Database, Database User, and Removed Extensions'
@@ -76,7 +76,7 @@ namespace :postgresql do
       if Array( fetch(:pg_extensions) ).any?
         Array( fetch(:pg_extensions) ).each do |ext|
           next if [nil, false, ''].include?(ext)
-          psql 'execute', fetch(:pg_database), '-c', %Q{"CREATE EXTENSION IF NOT EXISTS #{ext};"}unless extension_exists?(ext)
+          psql 'execute', fetch(:pg_database), "-p #{fetch(:pg_port)} -c", %Q{"CREATE EXTENSION IF NOT EXISTS #{ext};"}unless extension_exists?(ext)
         end
       end
     end
@@ -87,11 +87,11 @@ namespace :postgresql do
     on roles :db do
       unless database_user_exists?
         # If you use CREATE USER instead of CREATE ROLE the LOGIN right is granted automatically; otherwise you must specify it in the WITH clause of the CREATE statement.
-        psql 'execute', fetch(:pg_system_db), '-c', %Q{"CREATE USER \\"#{fetch(:pg_username)}\\" PASSWORD}, redact("'#{fetch(:pg_password)}'"), %Q{;"}
+        psql 'execute', fetch(:pg_system_db), "-p #{fetch(:pg_port)} -c", %Q{"CREATE USER \\"#{fetch(:pg_username)}\\" PASSWORD}, redact("'#{fetch(:pg_password)}'"), %Q{;"}
       end
       if database_user_password_different?
         # Ensure updating the password in your deploy/ENV.rb files updates the user, server side
-        psql 'execute', fetch(:pg_system_db), '-c', %Q{"ALTER USER \\"#{fetch(:pg_username)}\\" WITH PASSWORD}, redact("'#{fetch(:pg_password)}'"), %Q{;"}
+        psql 'execute', fetch(:pg_system_db), "-p #{fetch(:pg_port)} -c", %Q{"ALTER USER \\"#{fetch(:pg_username)}\\" WITH PASSWORD}, redact("'#{fetch(:pg_password)}'"), %Q{;"}
       end
     end
   end
@@ -100,7 +100,7 @@ namespace :postgresql do
   task :create_database do
     on roles :db do
       unless database_exists?
-        psql 'execute', fetch(:pg_system_db), '-c', %Q{"CREATE DATABASE \\"#{fetch(:pg_database)}\\" OWNER \\"#{fetch(:pg_username)}\\";"}
+        psql 'execute', fetch(:pg_system_db), "-p #{fetch(:pg_port)} -c", %Q{"CREATE DATABASE \\"#{fetch(:pg_database)}\\" OWNER \\"#{fetch(:pg_username)}\\";"}
       end
     end
   end
