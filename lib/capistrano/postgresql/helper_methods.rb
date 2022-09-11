@@ -48,7 +48,7 @@ module Capistrano
           generate_database_yml_io
         else
           if File.exists?(config_file) # If there is a customized file in your rails app template directory, use it and convert any ERB
-            StringIO.new ERB.new(File.read(config_file)).result(binding)
+            StringIO.new(ERB.new(File.read(config_file)).result(binding)).string
           else # Else there's no customized file in your rails app template directory, proceed with the default.
             # Build yml file from settings
             ## We build the file line by line to avoid overwriting existing files
