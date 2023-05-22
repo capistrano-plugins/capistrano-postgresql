@@ -43,11 +43,11 @@ module Capistrano
         config_file = "#{fetch(:pg_templates_path)}/postgresql.yml.erb"
         if update
           raise('Regeneration of archetype database.yml need the original file to update from.') if archetype_file.nil?
-          raise('Cannot update a custom postgresql.yml.erb file.') if File.exists?(config_file) # Skip custom postgresql.yml.erb if we're updating. It's not supported
+          raise('Cannot update a custom postgresql.yml.erb file.') if File.exist?(config_file) # Skip custom postgresql.yml.erb if we're updating. It's not supported
           # Update yml file from settings
           generate_database_yml_io
         else
-          if File.exists?(config_file) # If there is a customized file in your rails app template directory, use it and convert any ERB
+          if File.exist?(config_file) # If there is a customized file in your rails app template directory, use it and convert any ERB
             StringIO.new ERB.new(File.read(config_file)).result(binding)
           else # Else there's no customized file in your rails app template directory, proceed with the default.
             # Build yml file from settings
